@@ -7,7 +7,6 @@ import { resellTicket } from "./resell";
 import { tranferTicket } from "./Transfer";
 import { buyTicket } from "./buyTicket";
 import { enableTicketToBuy } from "./enableTicketToBuy";
-import { whiteListBuyer } from "./whiteListBuyer";
 import { NavigateFunction } from "react-router-dom";
 
 export default (
@@ -98,17 +97,6 @@ export default (
         resetFormData,
         packageId,
         eventObject,
-        signAndExecuteTransaction,
-        client,
-        navigate,
-        setLoading,
-      );
-      break;
-    case "WhiteListBuyer":
-      whiteListBuyer(
-        formData,
-        resetFormData,
-        packageId,
         signAndExecuteTransaction,
         client,
         navigate,
