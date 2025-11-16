@@ -17,6 +17,7 @@ export default function ScanQR() {
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
   const currentAccount = useCurrentAccount();
   const packageId = useNetworkVariable("packageId" as never);
+  const redemptionRegistry = useNetworkVariable("redemptionRegistry" as never);
 
   const client = new IotaClient({
     url: getFullnodeUrl("testnet"),
@@ -58,19 +59,16 @@ export default function ScanQR() {
       return;
     }
 
-    const ticketFields = ticketDetails?.content?.fields;
-    if (ticketFields?.is_redeemed) {
-      alert("This ticket has already been redeemed!");
-      return;
-    }
-
     setLoading(true);
 
     const tx = new Transaction();
     tx.setGasBudget(50000000);
     tx.moveCall({
       target: `${packageId}::independent_ticketing_system_nft::redeem_ticket`,
-      arguments: [tx.object(scannedData.ticketId)],
+      arguments: [
+        tx.object(scannedData.ticketId),
+        tx.object(redemptionRegistry as string)
+      ],
     });
 
     signAndExecuteTransaction(
@@ -168,57 +166,31 @@ export default function ScanQR() {
                       {ticketDetails.content.fields.owner}
                     </Text>
 
-                    {ticketDetails.content.fields.is_redeemed ? (
-                      <Box
-                        style={{
-                          background: "#ff4444",
-                          padding: "1rem",
-                          borderRadius: "4px",
-                          marginTop: "1rem",
-                        }}
+                    <Box
+                      style={{
+                        background: "#44ff44",
+                        padding: "1rem",
+                        borderRadius: "4px",
+                        marginTop: "1rem",
+                      }}
+                    >
+                      <Text
+                        size={"4"}
+                        weight={"bold"}
+                        align={"center"}
+                        style={{ color: "#000" }}
                       >
-                        <Text
-                          size={"4"}
-                          weight={"bold"}
-                          align={"center"}
-                          style={{ color: "white" }}
-                        >
-                          ⚠️ TICKET ALREADY REDEEMED
-                        </Text>
-                        <Text size={"2"} style={{ color: "white" }}>
-                          Redeemed by: {ticketDetails.content.fields.redeemed_by}
-                        </Text>
-                        <Text size={"2"} style={{ color: "white" }}>
-                          Redeemed at: {ticketDetails.content.fields.redeemed_at}
-                        </Text>
-                      </Box>
-                    ) : (
-                      <Box
-                        style={{
-                          background: "#44ff44",
-                          padding: "1rem",
-                          borderRadius: "4px",
-                          marginTop: "1rem",
-                        }}
-                      >
-                        <Text
-                          size={"4"}
-                          weight={"bold"}
-                          align={"center"}
-                          style={{ color: "#000" }}
-                        >
-                          ✓ TICKET VALID - Ready to Redeem
-                        </Text>
-                      </Box>
-                    )}
+                        ✓ TICKET SCANNED - Click to Redeem
+                      </Text>
+                      <Text size={"2"} align={"center"} style={{ color: "#000", marginTop: "0.5rem" }}>
+                        (Smart contract will prevent double redemption)
+                      </Text>
+                    </Box>
 
                     <Flex gap={"3"} mt={"3"}>
                       <Button
                         onClick={handleRedeem}
-                        disabled={
-                          ticketDetails.content.fields.is_redeemed ||
-                          !currentAccount
-                        }
+                        disabled={!currentAccount}
                         style={{ background: "#0101ff" }}
                       >
                         Redeem Ticket

@@ -52,7 +52,6 @@ export default function ViewQR() {
   }
 
   const ticketFields = ticketData.content?.fields;
-  const isRedeemed = ticketFields?.is_redeemed || false;
 
   // Create QR code data with ticket information
   const qrData = JSON.stringify({
@@ -92,20 +91,6 @@ export default function ViewQR() {
             <Text size={"3"}>
               <span style={{ fontWeight: "700" }}>Price:</span> {ticketFields?.price}
             </Text>
-            {isRedeemed && (
-              <Box
-                style={{
-                  background: "#ff4444",
-                  padding: "0.5rem",
-                  borderRadius: "4px",
-                  marginTop: "0.5rem",
-                }}
-              >
-                <Text size={"3"} weight={"bold"} align={"center"} style={{ color: "white" }}>
-                  ⚠️ TICKET ALREADY REDEEMED
-                </Text>
-              </Box>
-            )}
           </Flex>
         </Flex>
       </Card>

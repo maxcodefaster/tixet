@@ -1,8 +1,9 @@
 module independent_ticketing_system::independent_ticketing_system_nft {
     use std::string;
     use iota::coin::{Coin};
-    use iota::iota::IOTA; 
+    use iota::iota::IOTA;
     use iota::event;
+    use iota::table::{Self, Table};
 
     public struct TicketNFT has key, store {
         id: UID,
@@ -14,10 +15,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         event_date: u64,
         royalty_percentage: u64,
         price: u64,
-        whitelisted_addresses: vector<address>,
-        is_redeemed: bool,
-        redeemed_by: address,
-        redeemed_at: u64
+        whitelisted_addresses: vector<address>
     }
 
     public struct CreatorCap has key {
@@ -36,6 +34,19 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         id: UID,
         available_tickets_to_buy: vector<TicketNFT>,
         total_seat: u64
+    }
+
+    public struct RedemptionRegistry has key {
+        id: UID,
+        redeemed_tickets: Table<ID, RedemptionInfo>
+    }
+
+    public struct RedemptionInfo has store, drop {
+        redeemed_by: address,
+        ticket_owner: address,
+        redeemed_at: u64,
+        event_id: string::String,
+        seat_number: u64
     }
 
     public struct TicketBoughtSuccessfully has copy, drop {
@@ -81,7 +92,12 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             id: object::new(ctx),
             available_tickets_to_buy: vector::empty<TicketNFT>(),
             total_seat: 300
-        })
+        });
+
+        transfer::share_object(RedemptionRegistry {
+            id: object::new(ctx),
+            redeemed_tickets: table::new<ID, RedemptionInfo>(ctx)
+        });
     }
 
     #[allow(lint(self_transfer))]
@@ -116,10 +132,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             event_date,
             royalty_percentage,
             price,
-            whitelisted_addresses,
-            is_redeemed: false,
-            redeemed_by: @0x0,
-            redeemed_at: 0
+            whitelisted_addresses
         };
 
         set_total_seat(nft_count-1,event_object);
@@ -226,20 +239,36 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         object::delete(id1);
     }
 
-    public fun redeem_ticket(nft: &mut TicketNFT, ctx: &mut TxContext) {
-        assert!(!nft.is_redeemed, TICKET_ALREADY_REDEEMED);
+    public fun redeem_ticket(
+        ticket: &TicketNFT,
+        registry: &mut RedemptionRegistry,
+        ctx: &mut TxContext
+    ) {
+        let ticket_id = object::uid_to_inner(&ticket.id);
+
+        // Check if ticket already redeemed
+        assert!(!table::contains(&registry.redeemed_tickets, ticket_id), TICKET_ALREADY_REDEEMED);
 
         let redeemer = tx_context::sender(ctx);
         let current_time = tx_context::epoch(ctx);
 
-        nft.is_redeemed = true;
-        nft.redeemed_by = redeemer;
-        nft.redeemed_at = current_time;
+        // Add to redemption registry
+        table::add(
+            &mut registry.redeemed_tickets,
+            ticket_id,
+            RedemptionInfo {
+                redeemed_by: redeemer,
+                ticket_owner: ticket.owner,
+                redeemed_at: current_time,
+                event_id: ticket.event_id,
+                seat_number: ticket.seat_number
+            }
+        );
 
         event::emit(TicketRedeemedSuccessfully {
-            ticket_id: object::uid_to_inner(&nft.id),
-            seat_number: nft.seat_number,
-            event_id: nft.event_id,
+            ticket_id,
+            seat_number: ticket.seat_number,
+            event_id: ticket.event_id,
             redeemed_by: redeemer,
             redeemed_at: current_time,
             message: string::utf8(b"Ticket redeemed successfully"),
@@ -258,10 +287,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             event_date,
             royalty_percentage,
             price,
-            whitelisted_addresses,
-            is_redeemed,
-            redeemed_by,
-            redeemed_at } = nft;
+            whitelisted_addresses } = nft;
         object::delete(id);
     }
 
@@ -276,16 +302,12 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     }
 
     // Getter functions for redemption
-    public fun is_redeemed(nft: &TicketNFT): bool {
-        nft.is_redeemed
+    public fun is_redeemed(ticket_id: ID, registry: &RedemptionRegistry): bool {
+        table::contains(&registry.redeemed_tickets, ticket_id)
     }
 
-    public fun get_redeemed_by(nft: &TicketNFT): address {
-        nft.redeemed_by
-    }
-
-    public fun get_redeemed_at(nft: &TicketNFT): u64 {
-        nft.redeemed_at
+    public fun get_redemption_info(ticket_id: ID, registry: &RedemptionRegistry): &RedemptionInfo {
+        table::borrow(&registry.redeemed_tickets, ticket_id)
     }
 
     public fun get_ticket_id(nft: &TicketNFT): ID {

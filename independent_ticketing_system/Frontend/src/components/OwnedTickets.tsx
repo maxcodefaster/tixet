@@ -114,25 +114,6 @@ export default function OwnedObjects() {
                       <span style={{ fontWeight: "700" }}>Price:</span>{" "}
                       {ticket.data.content.fields.price}
                     </Text>
-                    {ticket.data.content.fields.is_redeemed && (
-                      <Box
-                        style={{
-                          background: "#ff4444",
-                          padding: "0.5rem",
-                          borderRadius: "4px",
-                          marginTop: "0.5rem",
-                        }}
-                      >
-                        <Text
-                          size={"2"}
-                          weight={"bold"}
-                          align={"center"}
-                          style={{ color: "white" }}
-                        >
-                          ✓ REDEEMED
-                        </Text>
-                      </Box>
-                    )}
                     <Flex
                       direction={"row"}
                       justify={"center"}
