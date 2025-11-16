@@ -133,7 +133,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
         set_total_seat(nft_count-1,event_object);
 
-        transfer::public_transfer(nft,sender);
+        vector::push_back(&mut event_object.available_tickets_to_buy, nft);
     }
 
     public fun enable_ticket_to_buy(

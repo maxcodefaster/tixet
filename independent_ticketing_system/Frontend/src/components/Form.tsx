@@ -23,8 +23,8 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
   const formTitles: Record<string, { title: string; subtitle: string; icon: string }> = {
     Mint: {
-      title: 'Mint New Ticket',
-      subtitle: 'Create a single ticket NFT (goes to your wallet)',
+      title: 'Create Ticket',
+      subtitle: 'Mint a ticket and list it on the marketplace',
       icon: '✨'
     },
     EnableTicketToBuy: {
@@ -336,28 +336,6 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
               🎟️ Initial price per ticket in IOTA tokens
             </p>
           </Form.Field>
-        )}
-
-        {openForm === "Mint" && (
-          <div style={{
-            marginTop: '1rem',
-            padding: '1rem',
-            background: 'rgba(255, 165, 0, 0.1)',
-            border: '1px solid rgba(255, 165, 0, 0.3)',
-            borderRadius: '8px',
-          }}>
-            <p style={{
-              fontSize: '0.85rem',
-              color: 'rgba(255, 200, 100, 0.95)',
-              fontFamily: 'var(--font-mono)',
-              margin: 0,
-              lineHeight: 1.6,
-            }}>
-              <strong>⚠️ Two-Step Process:</strong><br/>
-              1️⃣ Mint creates ONE ticket in YOUR wallet<br/>
-              2️⃣ Use "Sell Ticket" to list it on the marketplace
-            </p>
-          </div>
         )}
 
         {(openForm === "Transfer" ||
