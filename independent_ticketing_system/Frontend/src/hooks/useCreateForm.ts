@@ -11,7 +11,6 @@ import { useNetworkVariable } from "../networkConfig";
 export const useCreateForm = () => {
   const packageId = useNetworkVariable("packageId" as never);
   const eventObject = useNetworkVariable("eventObject" as never);
-  const creatorCap = useNetworkVariable("creatorCap" as never);
   const [address] = useAccounts();
   useEffect(() => console.log("Address = ", address), [address]);
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
@@ -84,7 +83,6 @@ export const useCreateForm = () => {
     updateFormData,
     resetFormData,
     eventObject,
-    creatorCap,
     nftFormData,
     updateNftFormData,
     resetNftFormData,

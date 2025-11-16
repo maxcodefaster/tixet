@@ -93,7 +93,6 @@ iota client publish --gas-budget 100000000
 
 **Important**: After publishing, save these object IDs from the output:
 - `PackageID`: The deployed package address
-- `CreatorCap`: The creator capability object
 - `EventObject`: The shared event object
 - `RedemptionRegistry`: The shared redemption registry
 
@@ -112,7 +111,6 @@ testnet: {
   url: getFullnodeUrl("testnet"),
   variables: {
     packageId: "YOUR_PACKAGE_ID_HERE",
-    creatorCap: "YOUR_CREATORCAP_ADDRESS_HERE",
     eventObject: "YOUR_EVENTOBJECT_ADDRESS_HERE",
     redemptionRegistry: "YOUR_REDEMPTION_REGISTRY_ADDRESS_HERE",
   },
@@ -139,8 +137,8 @@ Open your browser to `http://localhost:5173`
 
 ### For Event Creators
 
-1. Connect your wallet (must own the CreatorCap)
-2. Click **"⚡ Mint Tickets"**
+1. Connect your wallet
+2. Click **"✨ Create"** to access the mint tickets page
 3. Fill in event details (ID, date, price, royalty %)
 4. Mint tickets to create NFTs for your event
 
@@ -165,7 +163,7 @@ Open your browser to `http://localhost:5173`
 - **TicketNFT**: Unique NFT for each ticket with event metadata
 - **EventObject**: Shared object storing available tickets for sale
 - **RedemptionRegistry**: Shared table tracking redeemed tickets
-- **CreatorCap**: Capability granting minting privileges
+- **Open Marketplace**: Anyone can create events and mint tickets without special permissions
 
 ### Key Innovation: Redemption Without Ownership
 

@@ -1,34 +1,10 @@
 import { ConnectButton } from "@iota/dapp-kit";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { useNetworkVariable } from "./networkConfig";
-import { useEffect, useState } from "react";
 import { useCreateForm } from "./hooks/useCreateForm";
 
 function App() {
-  const creatorCap = useNetworkVariable("creatorCap" as never);
-  const [_isCreator, setIsCreator] = useState<boolean>(false);
   const { address } = useCreateForm();
   const location = useLocation();
-
-  useEffect(() => {
-    const body = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iota_getObject",
-      params: [creatorCap, { showContent: true }],
-    };
-    fetch("https://indexer.testnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setIsCreator(address.address === res.result.data.content.fields.address);
-      });
-  }, [address]);
 
   const navItems = [
     { path: '/AvailableTickets', label: 'Browse', icon: '🎫' },

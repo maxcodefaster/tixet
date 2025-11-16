@@ -12,7 +12,6 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
   const {
     packageId,
     eventObject,
-    creatorCap,
     signAndExecuteTransaction,
     client,
     formData,
@@ -410,7 +409,6 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
                 resetFormData,
                 packageId,
                 eventObject,
-                creatorCap,
                 signAndExecuteTransaction,
                 client,
                 navigate,
