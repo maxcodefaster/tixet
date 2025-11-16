@@ -21,9 +21,74 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
   } = useCreateForm();
   const [loading,setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  const formTitles: Record<string, { title: string; subtitle: string; icon: string }> = {
+    Mint: {
+      title: 'Create Event Tickets',
+      subtitle: 'Mint tickets for your blockchain event',
+      icon: '✨'
+    },
+    Transfer: {
+      title: 'Transfer Ticket',
+      subtitle: 'Send your ticket to another address',
+      icon: '🔄'
+    },
+    Resell: {
+      title: 'Resell Ticket',
+      subtitle: 'List your ticket for resale',
+      icon: '💰'
+    },
+    Burn: {
+      title: 'Burn Ticket',
+      subtitle: 'Permanently destroy this ticket',
+      icon: '🔥'
+    },
+  };
+
+  const currentForm = formTitles[openForm] || { title: openForm, subtitle: '', icon: '📝' };
+
   return (
-    <div style={styles.formContainer}>
-      <h1 style={{ textAlign: "center" }}>{openForm}</h1>
+    <div style={{
+      ...styles.formContainer,
+      animation: 'fadeInUp 0.6s ease-out',
+    }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '2rem',
+        paddingBottom: '1.5rem',
+        borderBottom: '1px solid rgba(0, 240, 255, 0.15)',
+      }}>
+        <div style={{
+          fontSize: '3rem',
+          marginBottom: '0.5rem',
+          filter: 'drop-shadow(0 0 20px rgba(0, 240, 255, 0.4))',
+        }}>
+          {currentForm.icon}
+        </div>
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '2rem',
+          background: 'var(--gradient-accent)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: '0 0 0.5rem 0',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}>
+          {currentForm.title}
+        </h1>
+        {currentForm.subtitle && (
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.9rem',
+            color: 'rgba(240, 244, 248, 0.6)',
+            margin: 0,
+          }}>
+            {currentForm.subtitle}
+          </p>
+        )}
+      </div>
       <Form.Root style={styles.formRoot}>
         {(openForm === "BuyResell" || openForm === "BuyTicket") && (
           <Form.Field name="" style={styles.formField}>
@@ -41,23 +106,58 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
         {openForm === "Mint" && (
           <Form.Field name="" style={styles.formField}>
-            <Form.Label style={styles.formLabel}>Event ID</Form.Label>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.5rem'
+            }}>
+              <Form.Label style={styles.formLabel}>Event Name</Form.Label>
+              <span style={{
+                fontSize: '0.75rem',
+                color: 'var(--electric-cyan)',
+                fontFamily: 'var(--font-mono)',
+                background: 'rgba(0, 240, 255, 0.1)',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '4px',
+                border: '1px solid rgba(0, 240, 255, 0.2)',
+              }}>
+                UNIQUE ID
+              </span>
+            </div>
             <Form.Control asChild>
               <TextField.Root
                 value={formData?.eventId}
                 onChange={(e) => updateFormData("eventId", e.target.value)}
                 size="2"
-                placeholder="0x..."
+                placeholder="e.g., summer-music-fest-2025"
               />
             </Form.Control>
-            <p style={{
-              fontSize: '0.85rem',
-              color: 'rgba(240, 244, 248, 0.6)',
-              marginTop: '0.5rem',
-              fontFamily: 'var(--font-mono)',
+            <div style={{
+              marginTop: '0.75rem',
+              padding: '0.75rem',
+              background: 'rgba(0, 240, 255, 0.05)',
+              border: '1px solid rgba(0, 240, 255, 0.15)',
+              borderRadius: '6px',
             }}>
-              The blockchain ID of your event object
-            </p>
+              <p style={{
+                fontSize: '0.8rem',
+                color: 'rgba(240, 244, 248, 0.8)',
+                fontFamily: 'var(--font-mono)',
+                margin: 0,
+                lineHeight: 1.5,
+              }}>
+                💡 <strong style={{ color: 'var(--electric-cyan)' }}>Pro tip:</strong> Use a unique, memorable name for your event. This becomes the permanent blockchain identifier.
+              </p>
+              <p style={{
+                fontSize: '0.75rem',
+                color: 'rgba(240, 244, 248, 0.5)',
+                fontFamily: 'var(--font-mono)',
+                margin: '0.5rem 0 0 0',
+              }}>
+                Examples: "coachella-2025", "eth-denver", "local-concert-oct"
+              </p>
+            </div>
           </Form.Field>
         )}
 
@@ -118,52 +218,118 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
         {openForm === "Mint" && (
           <Form.Field name="" style={styles.formField}>
-            <Form.Label style={styles.formLabel}>Royalty Percentage</Form.Label>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.5rem'
+            }}>
+              <Form.Label style={styles.formLabel}>Royalty Percentage</Form.Label>
+              <span style={{
+                fontSize: '0.75rem',
+                color: 'var(--lime-flash)',
+                fontFamily: 'var(--font-mono)',
+                background: 'rgba(204, 255, 0, 0.1)',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '4px',
+                border: '1px solid rgba(204, 255, 0, 0.2)',
+              }}>
+                EARNINGS
+              </span>
+            </div>
             <Form.Control asChild>
-              <TextField.Root
-                value={formData.royaltyPercentage}
-                onChange={(e) =>
-                  updateFormData("royaltyPercentage", e.target.value)
-                }
-                size="2"
-                placeholder="2"
-                type="number"
-                min="0"
-                max="100"
-              />
+              <div style={{ position: 'relative' }}>
+                <TextField.Root
+                  value={formData.royaltyPercentage}
+                  onChange={(e) =>
+                    updateFormData("royaltyPercentage", e.target.value)
+                  }
+                  size="2"
+                  placeholder="2"
+                  type="number"
+                  min="0"
+                  max="100"
+                />
+                <span style={{
+                  position: 'absolute',
+                  right: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '1rem',
+                  color: 'rgba(240, 244, 248, 0.4)',
+                  fontFamily: 'var(--font-mono)',
+                  pointerEvents: 'none',
+                }}>
+                  %
+                </span>
+              </div>
             </Form.Control>
             <p style={{
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               color: 'rgba(240, 244, 248, 0.6)',
               marginTop: '0.5rem',
               fontFamily: 'var(--font-mono)',
             }}>
-              Percentage you'll earn from secondary sales (e.g., 2 for 2%)
+              💰 Earn this % from every resale on the secondary market
             </p>
           </Form.Field>
         )}
 
         {openForm === "Mint" && (
           <Form.Field name="" style={styles.formField}>
-            <Form.Label style={styles.formLabel}>Price (IOTA)</Form.Label>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.5rem'
+            }}>
+              <Form.Label style={styles.formLabel}>Ticket Price</Form.Label>
+              <span style={{
+                fontSize: '0.75rem',
+                color: 'var(--hot-magenta)',
+                fontFamily: 'var(--font-mono)',
+                background: 'rgba(255, 0, 110, 0.1)',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '4px',
+                border: '1px solid rgba(255, 0, 110, 0.2)',
+              }}>
+                IOTA
+              </span>
+            </div>
             <Form.Control asChild>
-              <TextField.Root
-                value={formData.price}
-                onChange={(e) => updateFormData("price", e.target.value)}
-                size="2"
-                placeholder="0.00"
-                type="number"
-                min="0"
-                step="0.01"
-              />
+              <div style={{ position: 'relative' }}>
+                <span style={{
+                  position: 'absolute',
+                  left: '1rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '1rem',
+                  color: 'rgba(240, 244, 248, 0.4)',
+                  fontFamily: 'var(--font-mono)',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                }}>
+                  ⟠
+                </span>
+                <TextField.Root
+                  value={formData.price}
+                  onChange={(e) => updateFormData("price", e.target.value)}
+                  size="2"
+                  placeholder="10.00"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  style={{ paddingLeft: '2.5rem' }}
+                />
+              </div>
             </Form.Control>
             <p style={{
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               color: 'rgba(240, 244, 248, 0.6)',
               marginTop: '0.5rem',
               fontFamily: 'var(--font-mono)',
             }}>
-              Ticket price in IOTA tokens
+              🎟️ Initial price per ticket in IOTA tokens
             </p>
           </Form.Field>
         )}
@@ -255,6 +421,23 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
           />
         </Box>
       </Form.Root>
+
+      {/* Responsive styles for form */}
+      <style>{`
+        @media (max-width: 768px) {
+          [style*="maxWidth: 700px"] {
+            padding: 1.5rem !important;
+            margin-top: 1rem !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          [style*="maxWidth: 700px"] {
+            padding: 1rem !important;
+            border-radius: 12px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
