@@ -35,16 +35,12 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
         test_scenario::return_shared<EventObject>(event_object);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::end(scenario);
     }
     #[test]
@@ -54,34 +50,29 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-        
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
         transfer_ticket(ticket,BUYER1);
-        
+
         test_scenario::next_tx(test,BUYER1);
         let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,BUYER1);
         whitelist_buyer(BUYER2,&mut ticket2);
-        
+
         test_scenario::next_tx(test,BUYER1);
         resale(ticket2,500,BUYER2,test_scenario::ctx(test));
-        
+
         test_scenario::next_tx(test,BUYER2);
         let initiated_resale = test_scenario::take_from_sender<InitiateResale>(test);
-        
-        test_scenario::next_tx(test,CREATOR);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
+
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::next_tx(test,BUYER2);
         test_scenario::return_to_sender(test,initiated_resale);
@@ -94,62 +85,53 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let mut scenario = test_scenario::begin(CREATOR);
         let test = &mut scenario;
         initialize(test, CREATOR);
-        
-        test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
+
         test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-        
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
         burn(ticket,test_scenario::ctx(test));
-        
+
         test_scenario::next_tx(test,CREATOR);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-        
-        test_scenario::return_shared<CreatorCap>(creator_cap);
+
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_to_sender(test,ticket2);
         test_scenario::end(scenario);
     }
 
     #[test]
-    fun test_transfer_ticket() {  
+    fun test_transfer_ticket() {
         let mut scenario = test_scenario::begin(CREATOR);
         let test = &mut scenario;
         initialize(test, CREATOR);
-        
-        test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
+
         test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-        
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
         transfer_ticket(ticket,BUYER1);
-        
+
         test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
+
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::next_tx(test,BUYER1);
         test_scenario::return_to_sender(test,ticket2);
         test_scenario::end(scenario);
-        
+
     }
 
     #[test]
@@ -158,27 +140,23 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let mut scenario = test_scenario::begin(CREATOR);
         let test = &mut scenario;
         initialize(test, CREATOR);
-        
-        test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
+
         test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
-        
-        
+
+
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-        
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
-        enable_ticket_to_buy(&creator_cap,ticket,&mut event_object);
-        
+        enable_ticket_to_buy(ticket,&mut event_object);
+
         test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-        
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
+
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_to_sender(test,ticket2);
         test_scenario::end(scenario);
@@ -191,23 +169,20 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
         test_scenario::next_tx(test,CREATOR);
         let mut ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         whitelist_buyer(BUYER1, &mut ticket);
         test_scenario::next_tx(test,CREATOR);
 
-        enable_ticket_to_buy(&creator_cap,ticket,&mut event_object);
+        enable_ticket_to_buy(ticket,&mut event_object);
         test_scenario::next_tx(test,BUYER1);
-        
+
         let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
         test_scenario::next_tx(test,BUYER1);
         buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
@@ -215,8 +190,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         new_coin.burn_for_testing();
-        test_scenario::next_tx(test,CREATOR);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::next_tx(test,BUYER1);
         test_scenario::return_to_sender(test,ticket2);
@@ -230,13 +203,10 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
@@ -246,7 +216,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
 
         test_scenario::next_tx(test,BUYER1);
         let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         test_scenario::next_tx(test,BUYER1);
         whitelist_buyer(BUYER2, &mut ticket2);
 
@@ -262,8 +232,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         buy_resale(&mut new_coin,initiated_resale, test_scenario::ctx(test));
 
         new_coin.burn_for_testing();
-        test_scenario::next_tx(test,CREATOR);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::end(scenario);
     }
@@ -275,19 +243,15 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-        
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
-        
+
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-        
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
         test_scenario::next_tx(test,CREATOR);
         let mut ticket = test_scenario::take_from_sender<TicketNFT>(test);
-        
+
         whitelist_buyer(BUYER1,&mut ticket);
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_to_sender(test,ticket);
 
@@ -301,16 +265,13 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
         test_scenario::next_tx(test, CREATOR);
         let mut redemption_registry = test_scenario::take_shared<RedemptionRegistry>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
@@ -326,7 +287,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         // Verify ticket is now redeemed
         assert!(is_redeemed(ticket_id, &redemption_registry), 1);
 
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
         test_scenario::return_to_sender(test,ticket);
@@ -341,16 +301,13 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         initialize(test, CREATOR);
 
         test_scenario::next_tx(test, CREATOR);
-        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
-
-        test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
         test_scenario::next_tx(test, CREATOR);
         let mut redemption_registry = test_scenario::take_shared<RedemptionRegistry>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
@@ -362,7 +319,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,BUYER2);
         redeem_ticket(&ticket, &mut redemption_registry, test_scenario::ctx(test));
 
-        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
         test_scenario::return_to_sender(test,ticket);
