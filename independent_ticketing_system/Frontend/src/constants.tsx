@@ -14,10 +14,6 @@ export const operations: OperationType[] = [
     description: "Buy Ticket",
   },
   {
-    name: "EnableTicketToBuy",
-    description: "Sell Ticket",
-  },
-  {
     name: "Resell",
     description: "Resell Ticket",
   },
