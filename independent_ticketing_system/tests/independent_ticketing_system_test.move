@@ -289,6 +289,9 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
 
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
+
+        // Switch back to CREATOR before returning the ticket
+        test_scenario::next_tx(test, CREATOR);
         test_scenario::return_to_sender(test,ticket);
         test_scenario::end(scenario);
     }
