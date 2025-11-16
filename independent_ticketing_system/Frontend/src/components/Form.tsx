@@ -23,9 +23,14 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
   const formTitles: Record<string, { title: string; subtitle: string; icon: string }> = {
     Mint: {
-      title: 'Create Event Tickets',
-      subtitle: 'Mint tickets for your blockchain event',
+      title: 'Mint New Ticket',
+      subtitle: 'Create a single ticket NFT (goes to your wallet)',
       icon: '✨'
+    },
+    EnableTicketToBuy: {
+      title: 'List Ticket for Sale',
+      subtitle: 'Move your ticket to the marketplace for buyers',
+      icon: '🏪'
     },
     Transfer: {
       title: 'Transfer Ticket',
@@ -34,7 +39,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
     },
     Resell: {
       title: 'Resell Ticket',
-      subtitle: 'List your ticket for resale',
+      subtitle: 'Offer your ticket to a specific buyer',
       icon: '💰'
     },
     Burn: {
@@ -333,9 +338,31 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
           </Form.Field>
         )}
 
+        {openForm === "Mint" && (
+          <div style={{
+            marginTop: '1rem',
+            padding: '1rem',
+            background: 'rgba(255, 165, 0, 0.1)',
+            border: '1px solid rgba(255, 165, 0, 0.3)',
+            borderRadius: '8px',
+          }}>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(255, 200, 100, 0.95)',
+              fontFamily: 'var(--font-mono)',
+              margin: 0,
+              lineHeight: 1.6,
+            }}>
+              <strong>⚠️ Two-Step Process:</strong><br/>
+              1️⃣ Mint creates ONE ticket in YOUR wallet<br/>
+              2️⃣ Use "Sell Ticket" to list it on the marketplace
+            </p>
+          </div>
+        )}
+
         {(openForm === "Transfer" ||
           openForm === "Resell" ||
-          openForm === "Burn" || openForm === "EnableTicketToBuy" || openForm === "WhiteListBuyer") && (
+          openForm === "Burn" || openForm === "EnableTicketToBuy") && (
           <Form.Field name="" style={styles.formField}>
             <Form.Label style={styles.formLabel}>NFT ID</Form.Label>
             <Form.Control asChild>
@@ -349,7 +376,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
           </Form.Field>
         )}
 
-        {(openForm === "Transfer" || openForm === "Resell" || openForm === "WhiteListBuyer") && (
+        {(openForm === "Transfer" || openForm === "Resell") && (
           <Form.Field name="" style={styles.formField}>
             <Form.Label style={styles.formLabel}>Recipient</Form.Label>
             <Form.Control asChild>

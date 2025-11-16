@@ -66,15 +66,12 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         message: string::String,
     }
 
-    // Error codes
     #[error]
     const NOT_ENOUGH_FUNDS: vector<u8> = b"Insufficient funds for gas and NFT transfer";
     #[error]
     const INVALID_ROYALTY: vector<u8> = b"Royalty percentage must be between 0 and 100";
     #[error]
     const ALL_TICKETS_SOLD: vector<u8> = b"All tickets has been sold out";
-    #[error]
-    const NOT_AUTHORISED_TO_BUY: vector<u8> = b"Recipient is not whitelisted";
     #[error]
     const INVALID_TICKET_TO_BUY: vector<u8> = b"Unable to buy ticket";
     #[error]
@@ -164,8 +161,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     ) {
 
         let sender = tx_context::sender(ctx);
-        assert!(vector::contains(&nft.whitelisted_addresses, &recipient),NOT_AUTHORISED_TO_BUY);
-        
+
         nft.price = updated_price;
 
         let initiate_resale = InitiateResale {
@@ -193,8 +189,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             let current_nft = vector::borrow(&event_object.available_tickets_to_buy, i);
             if (&current_nft.seat_number == seat_number) {
                 let mut deleted_nft = vector::remove(&mut event_object.available_tickets_to_buy, i);
-
-                // Removed whitelist check - anyone can now buy tickets from the marketplace
 
                 let payment = coin.split(deleted_nft.price, ctx);
                 transfer::public_transfer(payment, deleted_nft.creator);
@@ -294,12 +288,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         event_object.total_seat = value;
     }
 
-    #[allow(unused_variable)]
-    public fun whitelist_buyer(user:address,nft: &mut TicketNFT) {
-        vector::push_back(&mut nft.whitelisted_addresses,user);
-    }
-
-    // Getter functions for redemption
     public fun is_redeemed(ticket_id: ID, registry: &RedemptionRegistry): bool {
         table::contains(&registry.redeemed_tickets, ticket_id)
     }

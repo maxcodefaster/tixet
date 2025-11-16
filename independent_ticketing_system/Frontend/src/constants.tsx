@@ -25,10 +25,6 @@ export const operations: OperationType[] = [
     name: "Transfer",
     description: "Transfer Ticket",
   },
-  {
-    name: "WhiteListBuyer",
-    description: "WhiteList Buyer",
-  },
 ];
 
 export const nftOperations: OperationType[] = [
