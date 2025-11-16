@@ -38,7 +38,6 @@ testnet: {
   url: getFullnodeUrl("testnet"),
   variables: {
     packageId: "0xYOUR_PACKAGE_ID",
-    creatorCap: "0xYOUR_CREATOR_CAP_OBJECT_ID",
     eventObject: "0xYOUR_EVENT_OBJECT_ID",
     redemptionRegistry: "0xYOUR_REDEMPTION_REGISTRY_ID",
   },
@@ -49,7 +48,6 @@ testnet: {
 - Run `iota client publish --gas-budget 100000000` in the smart contract directory
 - Look for these in the transaction output:
   - `PackageID` → use for `packageId`
-  - Object of type `CreatorCap` → use for `creatorCap`
   - Object of type `EventObject` → use for `eventObject`
   - Object of type `RedemptionRegistry` → use for `redemptionRegistry`
 
@@ -80,7 +78,7 @@ Frontend/
 ├── src/
 │   ├── components/          # React components
 │   │   ├── Home.tsx         # Landing page & ticket gallery
-│   │   ├── Mint.tsx         # Create new tickets (creators only)
+│   │   ├── Mint.tsx         # Create new tickets (open to anyone)
 │   │   ├── AvailableTickets.tsx  # Browse marketplace
 │   │   ├── OwnedTickets.tsx      # User's ticket collection
 │   │   ├── ViewQR.tsx       # Display ticket QR code

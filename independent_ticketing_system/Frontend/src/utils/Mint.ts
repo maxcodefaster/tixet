@@ -8,7 +8,6 @@ export const mintTicket = (
   setFormData: React.Dispatch<React.SetStateAction<formDataType>>,
   packageId: any,
   eventObject: any,
-  creatorCap: any,
   signAndExecuteTransaction: any,
   client: IotaClient,
   navigate: NavigateFunction,
@@ -20,7 +19,6 @@ export const mintTicket = (
     tx.moveCall({
       target: `${packageId}::independent_ticketing_system_nft::mint_ticket`,
       arguments: [
-        tx.object(creatorCap),
         tx.pure.string(formData.eventId as string),
         tx.pure.u64(formData.eventdate as string),
         tx.pure.u64(formData.royaltyPercentage as string),
