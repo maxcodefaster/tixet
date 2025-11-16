@@ -6,7 +6,7 @@ import { useCreateForm } from "./hooks/useCreateForm";
 
 function App() {
   const creatorCap = useNetworkVariable("creatorCap" as never);
-  const [isCreator, setIsCreator] = useState<boolean>(false);
+  const [_isCreator, setIsCreator] = useState<boolean>(false);
   const { address } = useCreateForm();
 
   useEffect(() => {
@@ -25,7 +25,7 @@ function App() {
     })
       .then((res) => res.json())
       .then((res) => {
-        setIsCreator(address.address == res.result.data.content.fields.address);
+        setIsCreator(address.address === res.result.data.content.fields.address);
       });
   }, [address]);
 
@@ -78,56 +78,55 @@ function App() {
           {/* Nav Links */}
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {address && (
-              <Link to="/mint">
+              <Link to="/AvailableTickets">
                 <button style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.85rem',
+                  fontSize: '0.9rem',
                   fontWeight: 'bold',
-                  padding: '0.75rem 1.5rem',
-                  background: 'linear-gradient(135deg, var(--hot-magenta), var(--purple-haze))',
-                  color: 'white',
+                  padding: '0.85rem 2rem',
+                  background: 'linear-gradient(135deg, var(--electric-cyan), var(--purple-haze))',
+                  color: 'var(--void-black)',
                   border: 'none',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 0 15px rgba(255, 0, 110, 0.4)',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 15px rgba(0, 240, 255, 0.3)',
                 }} onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 0, 110, 0.6)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 240, 255, 0.4)';
                 }} onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 110, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 240, 255, 0.3)';
                 }}>
-                  ⚡ Create Event
+                  Browse Tickets
                 </button>
               </Link>
             )}
             {address && (
-              <Link to="/AvailableTickets">
+              <Link to="/mint">
                 <button style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.85rem',
-                  fontWeight: 'bold',
+                  fontWeight: '500',
                   padding: '0.75rem 1.5rem',
-                  background: 'linear-gradient(135deg, var(--electric-cyan), var(--purple-haze))',
-                  color: 'var(--void-black)',
-                  border: 'none',
-                  borderRadius: '4px',
+                  background: 'rgba(123, 44, 191, 0.15)',
+                  color: 'var(--white-glow)',
+                  border: '1px solid rgba(123, 44, 191, 0.4)',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 0 15px rgba(0, 240, 255, 0.4)',
+                  letterSpacing: '0.05em',
+                  transition: 'all 0.2s ease',
                 }} onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(0, 240, 255, 0.6)';
+                  e.currentTarget.style.background = 'rgba(123, 44, 191, 0.25)';
+                  e.currentTarget.style.borderColor = 'var(--purple-haze)';
                 }} onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.4)';
+                  e.currentTarget.style.background = 'rgba(123, 44, 191, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(123, 44, 191, 0.4)';
                 }}>
-                  🎫 Browse Tickets
+                  Create Event
                 </button>
               </Link>
             )}
@@ -136,29 +135,28 @@ function App() {
                 <button style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.85rem',
-                  fontWeight: 'bold',
+                  fontWeight: '500',
                   padding: '0.75rem 1.5rem',
-                  background: 'linear-gradient(135deg, var(--orange-burst), var(--hot-magenta))',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
+                  background: 'transparent',
+                  color: 'var(--white-glow)',
+                  border: '1px solid rgba(240, 244, 248, 0.3)',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 0 15px rgba(255, 107, 0, 0.4)',
+                  letterSpacing: '0.05em',
+                  transition: 'all 0.2s ease',
                 }} onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 107, 0, 0.6)';
+                  e.currentTarget.style.background = 'rgba(240, 244, 248, 0.05)';
+                  e.currentTarget.style.borderColor = 'var(--white-glow)';
                 }} onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 107, 0, 0.4)';
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(240, 244, 248, 0.3)';
                 }}>
-                  📷 Scan QR
+                  Scan QR
                 </button>
               </Link>
             )}
-            <div style={{ marginLeft: '1rem' }}>
+            <div style={{ marginLeft: '0.5rem' }}>
               <ConnectButton />
             </div>
           </div>

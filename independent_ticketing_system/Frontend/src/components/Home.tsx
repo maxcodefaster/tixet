@@ -1,7 +1,6 @@
 import { useCreateForm } from "../hooks/useCreateForm";
 import OwnedObjects from "./OwnedTickets";
 import AvailableTickets from "./AvailableTickets";
-import { Link } from "react-router-dom";
 
 export default function Home() {
   const { address } = useCreateForm();
@@ -146,82 +145,6 @@ export default function Home() {
           AVAILABLE TICKETS FOR PURCHASE
         </p>
         <AvailableTickets />
-      </div>
-
-      {/* Quick actions */}
-      <div className="fade-in-up-delay-2" style={{
-        marginTop: '4rem',
-        padding: '2rem',
-        background: 'var(--gradient-card)',
-        border: '1px solid rgba(0, 240, 255, 0.2)',
-        borderRadius: '12px',
-        textAlign: 'center',
-      }}>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '1.5rem',
-          color: 'var(--white-glow)',
-          marginBottom: '1.5rem',
-        }}>
-          QUICK ACTIONS
-        </h3>
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-        }}>
-          <Link to="/AvailableTickets">
-            <button style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              padding: '1rem 2rem',
-              background: 'var(--gradient-accent)',
-              color: 'var(--void-black)',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 0 20px rgba(0, 240, 255, 0.4)',
-            }} onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.6)';
-            }} onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.4)';
-            }}>
-              🎫 Browse Marketplace
-            </button>
-          </Link>
-          <Link to="/scanQR">
-            <button style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              padding: '1rem 2rem',
-              background: 'linear-gradient(135deg, var(--orange-burst), var(--hot-magenta))',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 0 20px rgba(255, 107, 0, 0.4)',
-            }} onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 107, 0, 0.6)';
-            }} onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 107, 0, 0.4)';
-            }}>
-              📷 Scan & Redeem
-            </button>
-          </Link>
-        </div>
       </div>
     </div>
   );
