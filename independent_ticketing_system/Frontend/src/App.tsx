@@ -31,9 +31,6 @@ function App() {
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
-      {/* Scanline effect */}
-      <div className="scanline" />
-
       {/* Navigation */}
       <nav style={{
         position: 'sticky',
@@ -80,7 +77,7 @@ function App() {
 
           {/* Nav Links */}
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            {isCreator && address && (
+            {address && (
               <Link to="/mint">
                 <button style={{
                   fontFamily: 'var(--font-mono)',
@@ -103,11 +100,11 @@ function App() {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 110, 0.4)';
                 }}>
-                  ⚡ Mint Tickets
+                  ⚡ Create Event
                 </button>
               </Link>
             )}
-            {!isCreator && address && (
+            {address && (
               <Link to="/AvailableTickets">
                 <button style={{
                   fontFamily: 'var(--font-mono)',

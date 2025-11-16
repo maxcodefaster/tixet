@@ -1,5 +1,6 @@
 import { useCreateForm } from "../hooks/useCreateForm";
 import OwnedObjects from "./OwnedTickets";
+import AvailableTickets from "./AvailableTickets";
 import { Link } from "react-router-dom";
 
 export default function Home() {
@@ -116,6 +117,36 @@ export default function Home() {
 
       {/* Owned tickets gallery */}
       <OwnedObjects />
+
+      {/* Marketplace section */}
+      <div className="fade-in-up-delay-1" style={{
+        marginTop: '4rem',
+      }}>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '2.5rem',
+          background: 'var(--gradient-accent)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: '0 0 0.5rem 0',
+          letterSpacing: '0.05em',
+          textAlign: 'center',
+        }}>
+          MARKETPLACE
+        </h2>
+        <p style={{
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--electric-cyan)',
+          fontSize: '0.9rem',
+          letterSpacing: '0.15em',
+          textAlign: 'center',
+          marginBottom: '2rem',
+        }}>
+          AVAILABLE TICKETS FOR PURCHASE
+        </p>
+        <AvailableTickets />
+      </div>
 
       {/* Quick actions */}
       <div className="fade-in-up-delay-2" style={{
