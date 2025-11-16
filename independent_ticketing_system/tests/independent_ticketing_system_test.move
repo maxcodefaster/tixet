@@ -66,7 +66,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
         
         test_scenario::next_tx(test,CREATOR);
-        transfer_ticket(ticket,BUYER1,test_scenario::ctx(test));
+        transfer_ticket(ticket,BUYER1);
         
         test_scenario::next_tx(test,BUYER1);
         let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
@@ -138,7 +138,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
         
         test_scenario::next_tx(test,CREATOR);
-        transfer_ticket(ticket,BUYER1,test_scenario::ctx(test));
+        transfer_ticket(ticket,BUYER1);
         
         test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
@@ -242,7 +242,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,CREATOR);
-        transfer_ticket(ticket,BUYER1,test_scenario::ctx(test));
+        transfer_ticket(ticket,BUYER1);
 
         test_scenario::next_tx(test,BUYER1);
         let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
