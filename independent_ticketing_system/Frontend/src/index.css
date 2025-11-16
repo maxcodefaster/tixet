@@ -256,3 +256,33 @@ code, pre {
   letter-spacing: 0.1em;
   box-shadow: 0 0 15px rgba(255, 0, 110, 0.5);
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  :root {
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+  }
+
+  body::before {
+    background-size: 50px 50px;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .ticket-card {
+    padding: var(--space-md);
+  }
+}
