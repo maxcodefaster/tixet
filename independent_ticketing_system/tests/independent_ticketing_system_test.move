@@ -5,7 +5,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
     use iota::iota::IOTA;
     use iota::test_scenario::{Self, Scenario};
     use independent_ticketing_system :: independent_ticketing_system_nft :: {
-        CreatorCap,
         EventObject,
         TicketNFT,
         InitiateResale,
@@ -15,7 +14,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         burn,
         transfer_ticket,
         test_init,
-        whitelist_buyer,
         enable_ticket_to_buy,
         buy_ticket,
         buy_resale,
@@ -55,17 +53,14 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
-        let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-
-        test_scenario::next_tx(test,CREATOR);
-        transfer_ticket(ticket,BUYER1);
+        // Ticket is now auto-listed in marketplace, buy it as BUYER1
+        test_scenario::next_tx(test,BUYER1);
+        let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+        new_coin.burn_for_testing();
 
         test_scenario::next_tx(test,BUYER1);
-        let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-
-        test_scenario::next_tx(test,BUYER1);
-        whitelist_buyer(BUYER2,&mut ticket2);
+        let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,BUYER1);
         resale(ticket2,500,BUYER2,test_scenario::ctx(test));
@@ -92,13 +87,19 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
+        // Ticket is auto-listed, buy it first
+        test_scenario::next_tx(test,BUYER1);
+        let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+        new_coin.burn_for_testing();
+
+        test_scenario::next_tx(test,BUYER1);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
 
-        test_scenario::next_tx(test,CREATOR);
+        test_scenario::next_tx(test,BUYER1);
         burn(ticket,test_scenario::ctx(test));
 
-        test_scenario::next_tx(test,CREATOR);
+        test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::return_shared<EventObject>(event_object);
@@ -117,6 +118,12 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
 
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
+        // Ticket is auto-listed, buy it first
+        test_scenario::next_tx(test,CREATOR);
+        let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+        new_coin.burn_for_testing();
 
         test_scenario::next_tx(test,CREATOR);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
@@ -144,17 +151,11 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test, CREATOR);
         let mut event_object = test_scenario::take_shared<EventObject>(test);
 
-
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
+        // Ticket is auto-listed when minted, so it should not be in sender's inventory
         test_scenario::next_tx(test,CREATOR);
-        let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-
-        test_scenario::next_tx(test,CREATOR);
-        enable_ticket_to_buy(ticket,&mut event_object);
-
-        test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::return_shared<EventObject>(event_object);
@@ -174,18 +175,11 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
-        let mut ticket = test_scenario::take_from_sender<TicketNFT>(test);
-
-        whitelist_buyer(BUYER1, &mut ticket);
-        test_scenario::next_tx(test,CREATOR);
-
-        enable_ticket_to_buy(ticket,&mut event_object);
+        // Ticket is auto-listed when minted, buy it directly
         test_scenario::next_tx(test,BUYER1);
-
         let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
-        test_scenario::next_tx(test,BUYER1);
         buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+
         test_scenario::next_tx(test,BUYER1);
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
@@ -197,7 +191,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
     }
 
     #[test]
-    fun test_buy_resale() { //fdsdfads
+    fun test_buy_resale() {
         let mut scenario = test_scenario::begin(CREATOR);
         let test = &mut scenario;
         initialize(test, CREATOR);
@@ -208,17 +202,14 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
-        let ticket = test_scenario::take_from_sender<TicketNFT>(test);
-
-        test_scenario::next_tx(test,CREATOR);
-        transfer_ticket(ticket,BUYER1);
+        // Ticket is auto-listed, buy it as BUYER1 first
+        test_scenario::next_tx(test,BUYER1);
+        let mut buy_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut buy_coin,300,&mut event_object,test_scenario::ctx(test));
+        buy_coin.burn_for_testing();
 
         test_scenario::next_tx(test,BUYER1);
-        let mut ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
-
-        test_scenario::next_tx(test,BUYER1);
-        whitelist_buyer(BUYER2, &mut ticket2);
+        let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,BUYER1);
         resale(ticket2,500,BUYER2,test_scenario::ctx(test));
@@ -237,28 +228,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
     }
 
     #[test]
-    fun test_whitelist_buyer() {
-        let mut scenario = test_scenario::begin(CREATOR);
-        let test = &mut scenario;
-        initialize(test, CREATOR);
-
-        test_scenario::next_tx(test, CREATOR);
-        let mut event_object = test_scenario::take_shared<EventObject>(test);
-
-        test_scenario::next_tx(test,CREATOR);
-        mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
-
-        test_scenario::next_tx(test,CREATOR);
-        let mut ticket = test_scenario::take_from_sender<TicketNFT>(test);
-
-        whitelist_buyer(BUYER1,&mut ticket);
-        test_scenario::return_shared<EventObject>(event_object);
-        test_scenario::return_to_sender(test,ticket);
-
-        test_scenario::end(scenario);
-    }
-
-    #[test]
     fun test_redeem_ticket() {
         let mut scenario = test_scenario::begin(CREATOR);
         let test = &mut scenario;
@@ -273,7 +242,13 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
+        // Ticket is auto-listed, buy it first
+        test_scenario::next_tx(test,BUYER1);
+        let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+        new_coin.burn_for_testing();
+
+        test_scenario::next_tx(test,BUYER1);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
 
         let ticket_id = get_ticket_id(&ticket);
@@ -290,8 +265,8 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
 
-        // Switch back to CREATOR before returning the ticket
-        test_scenario::next_tx(test, CREATOR);
+        // Return ticket to BUYER1 who owns it
+        test_scenario::next_tx(test, BUYER1);
         test_scenario::return_to_sender(test,ticket);
         test_scenario::end(scenario);
     }
@@ -312,7 +287,13 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::next_tx(test,CREATOR);
         mint_ticket(string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
 
-        test_scenario::next_tx(test,CREATOR);
+        // Ticket is auto-listed, buy it first
+        test_scenario::next_tx(test,BUYER1);
+        let mut new_coin = coin::mint_for_testing<IOTA>(500,test_scenario::ctx(test));
+        buy_ticket(&mut new_coin,300,&mut event_object,test_scenario::ctx(test));
+        new_coin.burn_for_testing();
+
+        test_scenario::next_tx(test,BUYER1);
         let ticket = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,BUYER1);
