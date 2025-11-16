@@ -47,9 +47,17 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
                 value={formData?.eventId}
                 onChange={(e) => updateFormData("eventId", e.target.value)}
                 size="2"
-                placeholder="event Id"
+                placeholder="0x..."
               />
             </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              The blockchain ID of your event object
+            </p>
           </Form.Field>
         )}
 
@@ -57,13 +65,54 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
           <Form.Field name="" style={styles.formField}>
             <Form.Label style={styles.formLabel}>Event Date</Form.Label>
             <Form.Control asChild>
-              <TextField.Root
-                value={formData.eventdate}
-                onChange={(e) => updateFormData("eventdate", e.target.value)}
-                size="2"
-                placeholder="E.g. 15/01/2025 => 10012025"
+              <input
+                type="date"
+                value={
+                  // Convert from DDMMYYYY to YYYY-MM-DD for display
+                  formData.eventdate && formData.eventdate.length === 8
+                    ? `${formData.eventdate.slice(4, 8)}-${formData.eventdate.slice(2, 4)}-${formData.eventdate.slice(0, 2)}`
+                    : ""
+                }
+                onChange={(e) => {
+                  // Convert date format from YYYY-MM-DD to DDMMYYYY
+                  const dateValue = e.target.value;
+                  if (dateValue) {
+                    const [year, month, day] = dateValue.split('-');
+                    const formattedDate = `${day}${month}${year}`;
+                    updateFormData("eventdate", formattedDate);
+                  } else {
+                    updateFormData("eventdate", "");
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '1rem',
+                  fontFamily: 'var(--font-body)',
+                  background: 'rgba(26, 31, 58, 0.6)',
+                  border: '1px solid rgba(0, 240, 255, 0.3)',
+                  borderRadius: '6px',
+                  color: 'var(--white-glow)',
+                  transition: 'all 0.2s ease',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--electric-cyan)';
+                  e.target.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.3)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
             </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              Select the date when your event will take place
+            </p>
           </Form.Field>
         )}
 
@@ -77,23 +126,45 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
                   updateFormData("royaltyPercentage", e.target.value)
                 }
                 size="2"
-                placeholder="E.g. 2 => 2%"
+                placeholder="2"
+                type="number"
+                min="0"
+                max="100"
               />
             </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              Percentage you'll earn from secondary sales (e.g., 2 for 2%)
+            </p>
           </Form.Field>
         )}
 
         {openForm === "Mint" && (
           <Form.Field name="" style={styles.formField}>
-            <Form.Label style={styles.formLabel}>Price</Form.Label>
+            <Form.Label style={styles.formLabel}>Price (IOTA)</Form.Label>
             <Form.Control asChild>
               <TextField.Root
                 value={formData.price}
                 onChange={(e) => updateFormData("price", e.target.value)}
                 size="2"
-                placeholder="Price"
+                placeholder="0.00"
+                type="number"
+                min="0"
+                step="0.01"
               />
             </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              Ticket price in IOTA tokens
+            </p>
           </Form.Field>
         )}
 
