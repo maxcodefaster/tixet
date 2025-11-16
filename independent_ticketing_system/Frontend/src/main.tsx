@@ -19,6 +19,8 @@ import Mint from "./components/Mint.tsx";
 import ResellTickets from "./components/ResellTickets.tsx";
 import TransferTickets from "./components/TransferTickets.tsx";
 import BurnTickets from "./components/BurnTickets.tsx";
+import ViewQR from "./components/ViewQR.tsx";
+import ScanQR from "./components/ScanQR.tsx";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +52,14 @@ const router = createBrowserRouter([
       {
         path: "/ownedTickets/burnTicket/:nft",
         element: <BurnTickets />,
+      },
+      {
+        path: "/ownedTickets/viewQR/:nft",
+        element: <ViewQR />,
+      },
+      {
+        path: "/scanQR",
+        element: <ScanQR />,
       },
     ],
   },

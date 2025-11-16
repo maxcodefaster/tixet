@@ -1,10 +1,10 @@
 import { IotaClient } from "@iota/iota-sdk/client";
 import { formDataType, OpenFormState } from "../type";
-import { burnTicket } from "./burn";
+import { burnTicket } from "./Burn";
 import { buyResellTicket } from "./buyResell";
-import { mintTicket } from "./mint";
+import { mintTicket } from "./Mint";
 import { resellTicket } from "./resell";
-import { tranferTicket } from "./transfer";
+import { tranferTicket } from "./Transfer";
 import { buyTicket } from "./buyTicket";
 import { enableTicketToBuy } from "./enableTicketToBuy";
 import { whiteListBuyer } from "./whiteListBuyer";

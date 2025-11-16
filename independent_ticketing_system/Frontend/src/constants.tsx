@@ -33,6 +33,11 @@ export const operations: OperationType[] = [
 
 export const nftOperations: OperationType[] = [
   {
+    name: "ViewQR",
+    description: "View QR",
+    path:"viewQR",
+  },
+  {
     name: "Burn",
     description: "Burn",
     path:"burnTicket",

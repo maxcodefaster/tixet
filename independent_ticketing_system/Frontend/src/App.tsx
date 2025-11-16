@@ -71,6 +71,17 @@ function App() {
               </RadixButton>
             </Link>
           )}
+          {address && (
+            <Link to={"/scanQR"}>
+              <RadixButton
+                mr={"5"}
+                radius="none"
+                style={{ background: "#ff6b00" }}
+              >
+                Scan QR Code
+              </RadixButton>
+            </Link>
+          )}
 
           <ConnectButton />
         </Flex>

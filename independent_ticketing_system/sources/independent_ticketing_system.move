@@ -14,7 +14,10 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         event_date: u64,
         royalty_percentage: u64,
         price: u64,
-        whitelisted_addresses: vector<address>
+        whitelisted_addresses: vector<address>,
+        is_redeemed: bool,
+        redeemed_by: address,
+        redeemed_at: u64
     }
 
     public struct CreatorCap has key {
@@ -43,6 +46,15 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         message: string::String,
     }
 
+    public struct TicketRedeemedSuccessfully has copy, drop {
+        ticket_id: ID,
+        seat_number: u64,
+        event_id: string::String,
+        redeemed_by: address,
+        redeemed_at: u64,
+        message: string::String,
+    }
+
     // Error codes
     #[error]
     const NOT_ENOUGH_FUNDS: vector<u8> = b"Insufficient funds for gas and NFT transfer";
@@ -56,6 +68,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     const INVALID_TICKET_TO_BUY: vector<u8> = b"Unable to buy ticket";
     #[error]
     const INVALID_TOTAL_SEAT: vector<u8> = b"Value should be greater than zero";
+    #[error]
+    const TICKET_ALREADY_REDEEMED: vector<u8> = b"This ticket has already been redeemed";
 
     fun init(ctx: &mut TxContext) {
         let sender = ctx.sender();
@@ -102,7 +116,10 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             event_date,
             royalty_percentage,
             price,
-            whitelisted_addresses
+            whitelisted_addresses,
+            is_redeemed: false,
+            redeemed_by: @0x0,
+            redeemed_at: 0
         };
 
         set_total_seat(nft_count-1,event_object);
@@ -160,17 +177,17 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let sender = tx_context::sender(ctx);
         let mut i = 0;
         let length = vector::length(&event_object.available_tickets_to_buy);
-        
+
         while (i < length) {
             let current_nft = vector::borrow(&event_object.available_tickets_to_buy, i);
             if (&current_nft.seat_number == seat_number) {
                 let mut deleted_nft = vector::remove(&mut event_object.available_tickets_to_buy, i);
-                
-                assert!(vector::contains(&deleted_nft.whitelisted_addresses, &sender), NOT_AUTHORISED_TO_BUY);
-                
+
+                // Removed whitelist check - anyone can now buy tickets from the marketplace
+
                 let payment = coin.split(deleted_nft.price, ctx);
                 transfer::public_transfer(payment, deleted_nft.creator);
-                
+
                 deleted_nft.owner = sender;
 
                 event::emit(TicketBoughtSuccessfully {
@@ -209,6 +226,26 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         object::delete(id1);
     }
 
+    public fun redeem_ticket(nft: &mut TicketNFT, ctx: &mut TxContext) {
+        assert!(!nft.is_redeemed, TICKET_ALREADY_REDEEMED);
+
+        let redeemer = tx_context::sender(ctx);
+        let current_time = tx_context::epoch(ctx);
+
+        nft.is_redeemed = true;
+        nft.redeemed_by = redeemer;
+        nft.redeemed_at = current_time;
+
+        event::emit(TicketRedeemedSuccessfully {
+            ticket_id: object::uid_to_inner(&nft.id),
+            seat_number: nft.seat_number,
+            event_id: nft.event_id,
+            redeemed_by: redeemer,
+            redeemed_at: current_time,
+            message: string::utf8(b"Ticket redeemed successfully"),
+        });
+    }
+
     #[allow(unused_variable)]
     public fun burn(nft: TicketNFT, ctx: &mut TxContext) {
 
@@ -221,7 +258,10 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             event_date,
             royalty_percentage,
             price,
-            whitelisted_addresses } = nft;
+            whitelisted_addresses,
+            is_redeemed,
+            redeemed_by,
+            redeemed_at } = nft;
         object::delete(id);
     }
 
@@ -233,6 +273,23 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     #[allow(unused_variable)]
     public fun whitelist_buyer(user:address,nft: &mut TicketNFT) {
         vector::push_back(&mut nft.whitelisted_addresses,user);
+    }
+
+    // Getter functions for redemption
+    public fun is_redeemed(nft: &TicketNFT): bool {
+        nft.is_redeemed
+    }
+
+    public fun get_redeemed_by(nft: &TicketNFT): address {
+        nft.redeemed_by
+    }
+
+    public fun get_redeemed_at(nft: &TicketNFT): u64 {
+        nft.redeemed_at
+    }
+
+    public fun get_ticket_id(nft: &TicketNFT): ID {
+        object::uid_to_inner(&nft.id)
     }
 
     #[test_only]
