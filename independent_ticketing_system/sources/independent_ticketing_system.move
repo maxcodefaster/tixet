@@ -102,7 +102,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
     #[allow(lint(self_transfer))]
     public fun mint_ticket(
-        _: &CreatorCap,
         event_id: string::String,
         event_date: u64,
         royalty_percentage :u64,
@@ -141,7 +140,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     }
 
     public fun enable_ticket_to_buy(
-        _: &CreatorCap, 
         nft:TicketNFT,
         event_object: &mut EventObject
     ) {
