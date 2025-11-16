@@ -1,6 +1,4 @@
 import { ConnectButton } from "@iota/dapp-kit";
-import { Box, Flex, Heading } from "@radix-ui/themes";
-import { Button as RadixButton } from "@radix-ui/themes";
 import { Link, Outlet } from "react-router-dom";
 import { useNetworkVariable } from "./networkConfig";
 import { useEffect, useState } from "react";
@@ -10,6 +8,7 @@ function App() {
   const creatorCap = useNetworkVariable("creatorCap" as never);
   const [isCreator, setIsCreator] = useState<boolean>(false);
   const { address } = useCreateForm();
+
   useEffect(() => {
     const body = {
       jsonrpc: "2.0",
@@ -29,67 +28,157 @@ function App() {
         setIsCreator(address.address == res.result.data.content.fields.address);
       });
   }, [address]);
+
   return (
-    <Box>
-      <Flex
-        position="sticky"
-        px="4"
-        py="2"
-        justify="between"
-        align={"center"}
-        style={{
-          borderBottom: "1px solid var(--gray-a2)",
-          background: "#000000",
-        }}
-      >
-        <Box>
-          <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-            <Heading>Independent Ticketing System</Heading>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Scanline effect */}
+      <div className="scanline" />
+
+      {/* Navigation */}
+      <nav style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        background: 'linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '2px solid var(--electric-cyan)',
+        boxShadow: '0 4px 20px rgba(0, 240, 255, 0.2)',
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '1.5rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          {/* Logo */}
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '2rem',
+              background: 'var(--gradient-accent)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              letterSpacing: '0.1em',
+              margin: 0,
+              textShadow: '0 0 30px rgba(0, 240, 255, 0.5)',
+            }}>
+              TIXΞT
+            </h1>
+            <p style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.7rem',
+              color: 'var(--electric-cyan)',
+              margin: '0.25rem 0 0 0',
+              letterSpacing: '0.2em',
+            }}>
+              DECENTRALIZED EVENTS
+            </p>
           </Link>
-        </Box>
 
-        <Flex align={"center"}>
-          {isCreator && address && (
-            <Link to={"/mint"}>
-              <RadixButton
-                mr={"5"}
-                radius="none"
-                style={{ background: "#0101ff" }}
-              >
-                Mint Tickets
-              </RadixButton>
-            </Link>
-          )}
-          {!isCreator && address && (
-            <Link to={"/AvailableTickets"}>
-              <RadixButton
-                mr={"5"}
-                radius="none"
-                style={{ background: "#0101ff" }}
-              >
-                Buy Available Tickets
-              </RadixButton>
-            </Link>
-          )}
-          {address && (
-            <Link to={"/scanQR"}>
-              <RadixButton
-                mr={"5"}
-                radius="none"
-                style={{ background: "#ff6b00" }}
-              >
-                Scan QR Code
-              </RadixButton>
-            </Link>
-          )}
+          {/* Nav Links */}
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {isCreator && address && (
+              <Link to="/mint">
+                <button style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(135deg, var(--hot-magenta), var(--purple-haze))',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 15px rgba(255, 0, 110, 0.4)',
+                }} onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 0, 110, 0.6)';
+                }} onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 0, 110, 0.4)';
+                }}>
+                  ⚡ Mint Tickets
+                </button>
+              </Link>
+            )}
+            {!isCreator && address && (
+              <Link to="/AvailableTickets">
+                <button style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(135deg, var(--electric-cyan), var(--purple-haze))',
+                  color: 'var(--void-black)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 15px rgba(0, 240, 255, 0.4)',
+                }} onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(0, 240, 255, 0.6)';
+                }} onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.4)';
+                }}>
+                  🎫 Browse Tickets
+                </button>
+              </Link>
+            )}
+            {address && (
+              <Link to="/scanQR">
+                <button style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  padding: '0.75rem 1.5rem',
+                  background: 'linear-gradient(135deg, var(--orange-burst), var(--hot-magenta))',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 15px rgba(255, 107, 0, 0.4)',
+                }} onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(255, 107, 0, 0.6)';
+                }} onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 107, 0, 0.4)';
+                }}>
+                  📷 Scan QR
+                </button>
+              </Link>
+            )}
+            <div style={{ marginLeft: '1rem' }}>
+              <ConnectButton />
+            </div>
+          </div>
+        </div>
+      </nav>
 
-          <ConnectButton />
-        </Flex>
-      </Flex>
-      <Box style={{ background: "#111111" }} mx={"5"}>
+      {/* Main content */}
+      <main style={{
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '2rem',
+      }}>
         <Outlet />
-      </Box>
-    </Box>
+      </main>
+    </div>
   );
 }
 

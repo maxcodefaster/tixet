@@ -1,4 +1,3 @@
-import { Box, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
@@ -37,17 +36,24 @@ export default function ViewQR() {
 
   if (loading) {
     return (
-      <Flex justify={"center"} mt={"5"}>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
         <LoadingBar />
-      </Flex>
+      </div>
     );
   }
 
   if (!ticketData) {
     return (
-      <Flex justify={"center"} mt={"5"}>
-        <Heading>Ticket not found</Heading>
-      </Flex>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '4rem',
+        fontFamily: 'var(--font-display)',
+        fontSize: '2rem',
+        color: 'var(--hot-magenta)',
+      }}>
+        TICKET NOT FOUND
+      </div>
     );
   }
 
@@ -62,41 +68,208 @@ export default function ViewQR() {
   });
 
   return (
-    <Flex direction={"column"} justify={"center"} align={"center"} mt={"5"}>
-      <Heading mb={"5"}>Ticket QR Code</Heading>
-      <Card size="4" style={{ background: "#1e1e1e", padding: "2rem" }}>
-        <Flex direction={"column"} align={"center"} gap={"4"}>
-          <Box style={{ background: "white", padding: "1rem", borderRadius: "8px" }}>
+    <div className="fade-in-up" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: '2rem',
+      gap: '2rem',
+    }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '3rem',
+          background: 'var(--gradient-accent)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: '0 0 0.5rem 0',
+          letterSpacing: '0.05em',
+        }}>
+          YOUR TICKET
+        </h1>
+        <p style={{
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--electric-cyan)',
+          fontSize: '0.9rem',
+          margin: 0,
+          letterSpacing: '0.15em',
+        }}>
+          SHOW THIS QR CODE AT ENTRANCE
+        </p>
+      </div>
+
+      {/* Ticket Card */}
+      <div className="fade-in-up-delay-1" style={{
+        position: 'relative',
+        maxWidth: '500px',
+        width: '100%',
+        background: 'var(--gradient-card)',
+        border: '2px solid var(--electric-cyan)',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: 'var(--shadow-neon-cyan), var(--shadow-card)',
+      }}>
+        {/* Decorative header strip */}
+        <div style={{
+          background: 'var(--gradient-accent)',
+          height: '4px',
+        }} />
+
+        <div style={{ padding: '2.5rem' }}>
+          {/* QR Code */}
+          <div className="qr-container" style={{
+            margin: '0 auto 2rem auto',
+            width: 'fit-content',
+          }}>
             <QRCodeSVG
               value={qrData}
-              size={300}
+              size={280}
               level="H"
-              includeMargin={true}
+              includeMargin={false}
             />
-          </Box>
+          </div>
 
-          <Flex direction={"column"} gap={"2"} width={"100%"}>
-            <Text size={"4"} weight={"bold"} align={"center"}>
-              {ticketFields?.name}
-            </Text>
-            <Text size={"3"}>
-              <span style={{ fontWeight: "700" }}>Event ID:</span> {ticketFields?.event_id}
-            </Text>
-            <Text size={"3"}>
-              <span style={{ fontWeight: "700" }}>Seat Number:</span> {ticketFields?.seat_number}
-            </Text>
-            <Text size={"3"}>
-              <span style={{ fontWeight: "700" }}>Event Date:</span> {ticketFields?.event_date}
-            </Text>
-            <Text size={"3"}>
-              <span style={{ fontWeight: "700" }}>Price:</span> {ticketFields?.price}
-            </Text>
-          </Flex>
-        </Flex>
-      </Card>
-      <Text size={"2"} mt={"3"} style={{ color: "#888" }}>
-        Scan this QR code at the event entrance to redeem your ticket
-      </Text>
-    </Flex>
+          {/* Ticket Details */}
+          <div style={{
+            display: 'grid',
+            gap: '1.5rem',
+            fontFamily: 'var(--font-mono)',
+          }}>
+            <div>
+              <div style={{
+                color: 'var(--electric-cyan)',
+                fontSize: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+                marginBottom: '0.25rem',
+              }}>
+                Event ID
+              </div>
+              <div style={{
+                color: 'var(--white-glow)',
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+              }}>
+                {ticketFields?.event_id}
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '1rem',
+            }}>
+              <div>
+                <div style={{
+                  color: 'var(--electric-cyan)',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  marginBottom: '0.25rem',
+                }}>
+                  Seat #
+                </div>
+                <div style={{
+                  color: 'var(--hot-magenta)',
+                  fontSize: '2rem',
+                  fontWeight: 'bold',
+                  lineHeight: 1,
+                }}>
+                  {ticketFields?.seat_number}
+                </div>
+              </div>
+
+              <div>
+                <div style={{
+                  color: 'var(--electric-cyan)',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  marginBottom: '0.25rem',
+                }}>
+                  Date
+                </div>
+                <div style={{
+                  color: 'var(--white-glow)',
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                }}>
+                  {ticketFields?.event_date}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style={{
+                color: 'var(--electric-cyan)',
+                fontSize: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+                marginBottom: '0.25rem',
+              }}>
+                Price
+              </div>
+              <div style={{
+                color: 'var(--lime-flash)',
+                fontSize: '1.1rem',
+                fontWeight: 'bold',
+              }}>
+                {ticketFields?.price} IOTA
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative footer strip */}
+        <div style={{
+          background: 'var(--gradient-accent)',
+          height: '4px',
+        }} />
+
+        {/* Perforated edge effect */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '-10px',
+          width: '20px',
+          height: '20px',
+          background: 'var(--void-black)',
+          borderRadius: '50%',
+          border: '2px solid var(--electric-cyan)',
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          right: '-10px',
+          width: '20px',
+          height: '20px',
+          background: 'var(--void-black)',
+          borderRadius: '50%',
+          border: '2px solid var(--electric-cyan)',
+        }} />
+      </div>
+
+      {/* Instructions */}
+      <div className="fade-in-up-delay-2" style={{
+        textAlign: 'center',
+        maxWidth: '400px',
+        padding: '1.5rem',
+        background: 'rgba(0, 240, 255, 0.05)',
+        border: '1px solid rgba(0, 240, 255, 0.2)',
+        borderRadius: '8px',
+      }}>
+        <p style={{
+          fontFamily: 'var(--font-body)',
+          color: 'var(--white-glow)',
+          fontSize: '0.95rem',
+          lineHeight: 1.6,
+          margin: 0,
+        }}>
+          <span style={{ color: 'var(--electric-cyan)', fontWeight: 'bold' }}>⚡ Present this QR code</span> at the event entrance for verification and entry. Your ticket will be marked as redeemed upon scanning.
+        </p>
+      </div>
+    </div>
   );
 }
