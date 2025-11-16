@@ -1,67 +1,237 @@
-import { Flex, Heading } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { OpenFormState } from "../type";
-import { operations } from "../constants";
-import Button from "./molecules/Button";
-import Form from "./Form";
 import { useCreateForm } from "../hooks/useCreateForm";
 import OwnedObjects from "./OwnedTickets";
-import { useNetworkVariable } from "../networkConfig";
+import { Link } from "react-router-dom";
 
 export default function Home() {
-  const [openForm, setOpenForm] = useState<OpenFormState["openForm"]>("");
   const { address } = useCreateForm();
-  const creatorCap = useNetworkVariable("creatorCap" as never);
-  const [isCreator, setIsCreator] = useState<boolean>(false);
-  useEffect(() => {
-    const body = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iota_getObject",
-      params: [creatorCap, { showContent: true }],
-    };
-    fetch("https://indexer.testnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setIsCreator(address.address == res.result.data.content.fields.address);
-      });
-  }, [address]);
+
+  if (!address) {
+    return (
+      <div className="fade-in-up" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        textAlign: 'center',
+        gap: '2rem',
+      }}>
+        <div>
+          <h1 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '4rem',
+            background: 'var(--gradient-accent)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            margin: '0 0 1rem 0',
+            letterSpacing: '0.05em',
+          }}>
+            LIVE ON CHAIN
+          </h1>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '1.3rem',
+            color: 'var(--white-glow)',
+            maxWidth: '600px',
+            lineHeight: 1.6,
+          }}>
+            Decentralized ticketing powered by blockchain. Own your tickets as NFTs. Trade freely. Verify instantly.
+          </p>
+        </div>
+
+        <div style={{
+          padding: '2rem',
+          background: 'rgba(0, 240, 255, 0.05)',
+          border: '2px solid var(--electric-cyan)',
+          borderRadius: '12px',
+          boxShadow: 'var(--shadow-neon-cyan)',
+        }}>
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--electric-cyan)',
+            fontSize: '1rem',
+            margin: 0,
+          }}>
+            ⚡ Connect your wallet to get started
+          </p>
+        </div>
+
+        {/* Feature highlights */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '2rem',
+          maxWidth: '900px',
+          marginTop: '3rem',
+        }}>
+          <FeatureCard
+            icon="🎫"
+            title="NFT Tickets"
+            description="Each ticket is a unique blockchain asset you truly own"
+          />
+          <FeatureCard
+            icon="🔐"
+            title="Secure QR"
+            description="QR codes verified on-chain, impossible to counterfeit"
+          />
+          <FeatureCard
+            icon="💸"
+            title="Free Market"
+            description="Resell tickets directly without platform restrictions"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Flex direction={"column"} m={"6"} align={"center"}>
-      {address ? (
-        <>
-          <Flex direction={"row"} align={"center"} wrap={"wrap"} gap={"4"}>
-            {operations.map(
-              (value, index) =>
-                ((value.name === "EnableTicketToBuy" &&
-                  address &&
-                  isCreator) ||
-                  value.name !== "EnableTicketToBuy") && (
-                  <Button
-                    key={index}
-                    title={value.description}
-                    onClick={() => {
-                      setOpenForm(value.name);
-                    }}
-                    disabled={false}
-                  />
-                ),
-            )}
-          </Flex>
-          <OwnedObjects />
-        </>
-      ) : (
-        <Flex justify={"center"} mt={"5"}>
-          <Heading align={"center"}>Please connect your wallet first</Heading>
-        </Flex>
-      )}
-      {openForm !== "" && <Form openForm={openForm} />}
-    </Flex>
+    <div>
+      {/* Hero section for connected users */}
+      <div className="fade-in-up" style={{
+        marginBottom: '3rem',
+        textAlign: 'center',
+      }}>
+        <h1 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '3rem',
+          background: 'var(--gradient-accent)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: '0 0 0.5rem 0',
+          letterSpacing: '0.05em',
+        }}>
+          MY TICKETS
+        </h1>
+        <p style={{
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--electric-cyan)',
+          fontSize: '0.9rem',
+          letterSpacing: '0.15em',
+        }}>
+          YOUR BLOCKCHAIN TICKET COLLECTION
+        </p>
+      </div>
+
+      {/* Owned tickets gallery */}
+      <OwnedObjects />
+
+      {/* Quick actions */}
+      <div className="fade-in-up-delay-2" style={{
+        marginTop: '4rem',
+        padding: '2rem',
+        background: 'var(--gradient-card)',
+        border: '1px solid rgba(0, 240, 255, 0.2)',
+        borderRadius: '12px',
+        textAlign: 'center',
+      }}>
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '1.5rem',
+          color: 'var(--white-glow)',
+          marginBottom: '1.5rem',
+        }}>
+          QUICK ACTIONS
+        </h3>
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+        }}>
+          <Link to="/AvailableTickets">
+            <button style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              padding: '1rem 2rem',
+              background: 'var(--gradient-accent)',
+              color: 'var(--void-black)',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 20px rgba(0, 240, 255, 0.4)',
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.6)';
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.4)';
+            }}>
+              🎫 Browse Marketplace
+            </button>
+          </Link>
+          <Link to="/scanQR">
+            <button style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              padding: '1rem 2rem',
+              background: 'linear-gradient(135deg, var(--orange-burst), var(--hot-magenta))',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 0 20px rgba(255, 107, 0, 0.4)',
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(255, 107, 0, 0.6)';
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(255, 107, 0, 0.4)';
+            }}>
+              📷 Scan & Redeem
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: string, title: string, description: string }) {
+  return (
+    <div className="fade-in-up-delay-1" style={{
+      padding: '1.5rem',
+      background: 'var(--gradient-card)',
+      border: '1px solid rgba(0, 240, 255, 0.2)',
+      borderRadius: '8px',
+      transition: 'all 0.3s ease',
+    }} onMouseEnter={(e) => {
+      e.currentTarget.style.transform = 'translateY(-5px)';
+      e.currentTarget.style.borderColor = 'var(--electric-cyan)';
+      e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 240, 255, 0.3)';
+    }} onMouseLeave={(e) => {
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.2)';
+      e.currentTarget.style.boxShadow = 'none';
+    }}>
+      <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{icon}</div>
+      <h4 style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: '1rem',
+        color: 'var(--electric-cyan)',
+        marginBottom: '0.5rem',
+      }}>
+        {title}
+      </h4>
+      <p style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: '0.85rem',
+        color: 'var(--white-glow)',
+        opacity: 0.8,
+        lineHeight: 1.4,
+        margin: 0,
+      }}>
+        {description}
+      </p>
+    </div>
   );
 }
