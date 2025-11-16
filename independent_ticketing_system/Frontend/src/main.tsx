@@ -70,7 +70,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Theme appearance="dark">
       <QueryClientProvider client={queryClient}>
-        <IotaClientProvider networks={networkConfig} defaultNetwork="testnet">
+        <IotaClientProvider networks={networkConfig} defaultNetwork="devnet">
           <WalletProvider autoConnect theme={darkTheme}>
             <RouterProvider router={router} />
           </WalletProvider>

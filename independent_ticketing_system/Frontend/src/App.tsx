@@ -36,19 +36,6 @@ function App() {
           {/* Logo */}
           <Link to="/" style={{ textDecoration: 'none', flex: '0 0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                background: 'var(--gradient-accent)',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem',
-                boxShadow: '0 4px 16px rgba(0, 240, 255, 0.3)',
-              }}>
-                🎭
-              </div>
               <div>
                 <h1 style={{
                   fontFamily: 'var(--font-display)',

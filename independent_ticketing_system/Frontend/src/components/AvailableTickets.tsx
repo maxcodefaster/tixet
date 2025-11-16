@@ -29,7 +29,7 @@ export default function AvailableTickets() {
       method: "iota_getObject",
       params: [eventOjbect, { showContent: true }],
     };
-    fetch("https://indexer.testnet.iota.cafe/", {
+    fetch("https://indexer.devnet.iota.cafe/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,7 +38,6 @@ export default function AvailableTickets() {
     })
       .then((res) => res.json())
       .then((res) => {
-        // Fix: JSON-RPC response structure is res.result, not res.data.result
         if (res.result?.data?.content?.fields?.nfts) {
           setTickets(res.result.data.content.fields.nfts);
         } else if (res.error) {

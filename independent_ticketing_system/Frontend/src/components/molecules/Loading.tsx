@@ -25,7 +25,7 @@ export default function Loading() {
           repeatCount="indefinite"
         />
         <animate
-          attributeName="stroke-dashoffset"
+          attributeName="strokeDashoffset"
           values="283;0"
           dur="1s"
           repeatCount="indefinite"
