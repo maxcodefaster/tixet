@@ -35,7 +35,37 @@ tixet/
 
 ## Quick Start
 
-### 1. Build and Deploy Smart Contract
+### 1. Set Up Your IOTA Wallet
+
+First, configure your IOTA client and generate a wallet address:
+
+```bash
+iota client
+```
+
+When prompted:
+- Select network: `devnet` (or `testnet` for testnet)
+- Select key scheme: `0` (for ed25519)
+
+This will generate a new wallet address and save your secret recovery phrase.
+
+**Get Devnet/Testnet Tokens**
+
+Request test tokens from the faucet using your wallet address:
+
+```bash
+iota client faucet --address YOUR_WALLET_ADDRESS
+```
+
+Or use the web faucet (check IOTA documentation for the current faucet URL).
+
+Verify you received tokens:
+
+```bash
+iota client gas
+```
+
+### 2. Build and Deploy Smart Contract
 
 Navigate to the smart contract directory:
 
@@ -67,7 +97,7 @@ iota client publish --gas-budget 100000000
 - `EventObject`: The shared event object
 - `RedemptionRegistry`: The shared redemption registry
 
-### 2. Configure Frontend
+### 3. Configure Frontend
 
 Navigate to the frontend directory:
 
@@ -89,13 +119,13 @@ testnet: {
 }
 ```
 
-### 3. Install Frontend Dependencies
+### 4. Install Frontend Dependencies
 
 ```bash
 npm install --legacy-peer-deps
 ```
 
-### 4. Run the dApp
+### 5. Run the dApp
 
 Start the development server:
 
@@ -194,6 +224,13 @@ iota move test
 - **Whitelist Support**: Optional buyer whitelisting for exclusive events
 
 ## Troubleshooting
+
+### "Cannot find gas coin for signer address" error
+Your wallet needs test tokens. Request them from the faucet:
+```bash
+iota client faucet --address YOUR_WALLET_ADDRESS
+```
+Then verify: `iota client gas`
 
 ### "Module not found" errors
 Run `npm install --legacy-peer-deps` to resolve peer dependency conflicts.
