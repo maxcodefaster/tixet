@@ -1,0 +1,276 @@
+/* Import distinctive fonts */
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap');
+
+:root {
+  /* Concert/Festival Color Palette - Cyberpunk Neon */
+  --void-black: #0A0E27;
+  --deep-navy: #1a1f3a;
+  --electric-cyan: #00F0FF;
+  --hot-magenta: #FF006E;
+  --lime-flash: #CCFF00;
+  --orange-burst: #FF6B00;
+  --purple-haze: #7B2CBF;
+  --white-glow: #F0F4F8;
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, var(--void-black) 0%, var(--deep-navy) 50%, var(--purple-haze) 100%);
+  --gradient-card: linear-gradient(160deg, rgba(26, 31, 58, 0.9) 0%, rgba(10, 14, 39, 0.95) 100%);
+  --gradient-accent: linear-gradient(90deg, var(--electric-cyan) 0%, var(--hot-magenta) 100%);
+  --gradient-success: linear-gradient(90deg, var(--lime-flash) 0%, var(--electric-cyan) 100%);
+
+  /* Typography */
+  --font-display: 'Archivo Black', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+
+  /* Effects */
+  --shadow-neon-cyan: 0 0 20px rgba(0, 240, 255, 0.3);
+  --shadow-neon-magenta: 0 0 20px rgba(255, 0, 110, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--void-black);
+  color: var(--white-glow);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(45deg, transparent 48%, rgba(0, 240, 255, 0.03) 49%, rgba(0, 240, 255, 0.03) 51%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, rgba(255, 0, 110, 0.03) 49%, rgba(255, 0, 110, 0.03) 51%, transparent 52%);
+  background-size: 100px 100px;
+  animation: scan 20s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes scan {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 100px 100px, -100px 100px; }
+}
+
+/* Glowing orbs in background */
+body::after {
+  content: '';
+  position: fixed;
+  top: -50%;
+  right: -10%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 15s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-100px, 100px) scale(1.1); }
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* Glow effects */
+.glow-cyan {
+  text-shadow: 0 0 10px var(--electric-cyan), 0 0 20px var(--electric-cyan);
+}
+
+.glow-magenta {
+  text-shadow: 0 0 10px var(--hot-magenta), 0 0 20px var(--hot-magenta);
+}
+
+/* Button animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+}
+
+/* Scan line effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scanline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to bottom, transparent, var(--electric-cyan), transparent);
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 9999;
+}
+
+/* Ticket card effect */
+.ticket-card {
+  position: relative;
+  background: var(--gradient-card);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 8px;
+  padding: var(--space-lg);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.ticket-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.ticket-card:hover::before {
+  left: 100%;
+}
+
+.ticket-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-neon-cyan), var(--shadow-card);
+  border-color: var(--electric-cyan);
+}
+
+/* QR Code glow */
+.qr-container {
+  position: relative;
+  padding: var(--space-md);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.4), 0 0 60px rgba(255, 0, 110, 0.2);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Loading spinner */
+@keyframes spin-glow {
+  0% {
+    transform: rotate(0deg);
+    filter: drop-shadow(0 0 5px var(--electric-cyan));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--hot-magenta));
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: drop-shadow(0 0 5px var(--electric-cyan));
+  }
+}
+
+/* Fade in animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.fade-in-up-delay-1 {
+  animation: fadeInUp 0.6s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.fade-in-up-delay-2 {
+  animation: fadeInUp 0.6s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.fade-in-up-delay-3 {
+  animation: fadeInUp 0.6s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+/* Neon border effect */
+.neon-border {
+  position: relative;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.neon-border::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--gradient-accent);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.7;
+  filter: blur(4px);
+}
+
+/* Status badge */
+.status-redeemed {
+  background: linear-gradient(135deg, var(--lime-flash), var(--electric-cyan));
+  color: var(--void-black);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.5);
+}
+
+.status-available {
+  background: linear-gradient(135deg, var(--hot-magenta), var(--orange-burst));
+  color: white;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 15px rgba(255, 0, 110, 0.5);
+}

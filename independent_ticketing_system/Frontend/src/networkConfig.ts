@@ -12,6 +12,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
         packageId: "<YOUR_PACKAGE_ID>",
         creatorCap: "<YOUR_CREATORCAP_ADDRESS>",
         eventObject: "<YOUR_EVENTOBJECT_ADDRESS>",
+        redemptionRegistry: "<YOUR_REDEMPTION_REGISTRY_ADDRESS>",
 
       },
     },

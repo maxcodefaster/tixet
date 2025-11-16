@@ -9,6 +9,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         EventObject,
         TicketNFT,
         InitiateResale,
+        RedemptionRegistry,
         mint_ticket,
         resale,
         burn,
@@ -17,7 +18,10 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         whitelist_buyer,
         enable_ticket_to_buy,
         buy_ticket,
-        buy_resale
+        buy_resale,
+        redeem_ticket,
+        is_redeemed,
+        get_ticket_id
     };
 
     const CREATOR: address = @0xCCCC;
@@ -287,6 +291,81 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         test_scenario::return_shared<EventObject>(event_object);
         test_scenario::return_to_sender(test,ticket);
 
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_redeem_ticket() {
+        let mut scenario = test_scenario::begin(CREATOR);
+        let test = &mut scenario;
+        initialize(test, CREATOR);
+
+        test_scenario::next_tx(test, CREATOR);
+        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
+
+        test_scenario::next_tx(test, CREATOR);
+        let mut event_object = test_scenario::take_shared<EventObject>(test);
+
+        test_scenario::next_tx(test, CREATOR);
+        let mut redemption_registry = test_scenario::take_shared<RedemptionRegistry>(test);
+
+        test_scenario::next_tx(test,CREATOR);
+        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
+        test_scenario::next_tx(test,CREATOR);
+        let ticket = test_scenario::take_from_sender<TicketNFT>(test);
+
+        let ticket_id = get_ticket_id(&ticket);
+
+        // Verify ticket is not redeemed initially
+        assert!(!is_redeemed(ticket_id, &redemption_registry), 0);
+
+        test_scenario::next_tx(test,BUYER1);
+        redeem_ticket(&ticket, &mut redemption_registry, test_scenario::ctx(test));
+
+        // Verify ticket is now redeemed
+        assert!(is_redeemed(ticket_id, &redemption_registry), 1);
+
+        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
+        test_scenario::return_shared<EventObject>(event_object);
+        test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
+        test_scenario::return_to_sender(test,ticket);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = independent_ticketing_system::independent_ticketing_system_nft::TICKET_ALREADY_REDEEMED)]
+    fun test_double_redemption() {
+        let mut scenario = test_scenario::begin(CREATOR);
+        let test = &mut scenario;
+        initialize(test, CREATOR);
+
+        test_scenario::next_tx(test, CREATOR);
+        let creator_cap = test_scenario::take_from_sender<CreatorCap>(test);
+
+        test_scenario::next_tx(test, CREATOR);
+        let mut event_object = test_scenario::take_shared<EventObject>(test);
+
+        test_scenario::next_tx(test, CREATOR);
+        let mut redemption_registry = test_scenario::take_shared<RedemptionRegistry>(test);
+
+        test_scenario::next_tx(test,CREATOR);
+        mint_ticket(&creator_cap,string::utf8(b"testing@123"),3012025,5,&mut event_object,200,test.ctx());
+
+        test_scenario::next_tx(test,CREATOR);
+        let ticket = test_scenario::take_from_sender<TicketNFT>(test);
+
+        test_scenario::next_tx(test,BUYER1);
+        redeem_ticket(&ticket, &mut redemption_registry, test_scenario::ctx(test));
+
+        // Try to redeem again - should fail
+        test_scenario::next_tx(test,BUYER2);
+        redeem_ticket(&ticket, &mut redemption_registry, test_scenario::ctx(test));
+
+        test_scenario::return_to_sender<CreatorCap>(test,creator_cap);
+        test_scenario::return_shared<EventObject>(event_object);
+        test_scenario::return_shared<RedemptionRegistry>(redemption_registry);
+        test_scenario::return_to_sender(test,ticket);
         test_scenario::end(scenario);
     }
 

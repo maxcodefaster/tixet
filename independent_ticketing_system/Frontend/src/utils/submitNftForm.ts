@@ -1,8 +1,8 @@
 import { IotaClient } from "@iota/iota-sdk/client";
 import { formDataType, OpenFormState } from "../type";
-import { burnTicket } from "./burn";
+import { burnTicket } from "./Burn";
 import { resellTicket } from "./resell";
-import { tranferTicket } from "./transfer";
+import { tranferTicket } from "./Transfer";
 import { NavigateFunction } from "react-router-dom";
 
 export default (
