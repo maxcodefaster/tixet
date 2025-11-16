@@ -15,6 +15,14 @@ export default function AvailableTickets() {
   });
   const { address } = useCreateForm();
   useEffect(() => {
+    // Check if eventOjbect is properly configured
+    if (!eventOjbect || eventOjbect === "<YOUR_EVENTOBJECT_ADDRESS>") {
+      console.warn("Event object not configured in networkConfig.ts");
+      setTickets([]);
+      return;
+    }
+
+    // Fetch event tickets using JSON-RPC
     const body = {
       jsonrpc: "2.0",
       id: 1,
@@ -30,25 +38,45 @@ export default function AvailableTickets() {
     })
       .then((res) => res.json())
       .then((res) => {
-        setTickets(res.data.result.data.content.fields.nfts);
-      });
-    client
-      .getOwnedObjects({
-        owner: address.address || "",
-        filter: {
-          StructType: `${packageId}::independent_ticketing_system_nft::InitiateResale`,
-        },
-        options: {
-          showContent: true,
-        },
+        // Fix: JSON-RPC response structure is res.result, not res.data.result
+        if (res.result?.data?.content?.fields?.nfts) {
+          setTickets(res.result.data.content.fields.nfts);
+        } else if (res.error) {
+          console.error("Error fetching event tickets:", res.error);
+          setTickets([]);
+        } else {
+          console.warn("No tickets found in event object");
+          setTickets([]);
+        }
       })
-      .then((res) => res.data)
-      .then((res) =>
-        setTickets((prevTickets) =>
-          prevTickets ? [...prevTickets, ...res] : [...res],
-        ),
-      );
-  }, []);
+      .catch((error) => {
+        console.error("Error fetching event tickets:", error);
+        setTickets([]);
+      });
+
+    // Fetch resale tickets owned by the user
+    if (address?.address) {
+      client
+        .getOwnedObjects({
+          owner: address.address,
+          filter: {
+            StructType: `${packageId}::independent_ticketing_system_nft::InitiateResale`,
+          },
+          options: {
+            showContent: true,
+          },
+        })
+        .then((res) => res.data)
+        .then((res) =>
+          setTickets((prevTickets) =>
+            prevTickets ? [...prevTickets, ...res] : [...res],
+          ),
+        )
+        .catch((error) => {
+          console.error("Error fetching resale tickets:", error);
+        });
+    }
+  }, [eventOjbect, packageId, address?.address]);
   return (
     <Flex mt={"5"} justify={"center"}>
       {tickets && tickets.length > 0 ? (
