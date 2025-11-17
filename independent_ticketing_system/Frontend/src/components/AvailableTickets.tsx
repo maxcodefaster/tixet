@@ -208,132 +208,149 @@ export default function AvailableTickets() {
       });
   }, [eventMetadataMap, packageId]);
 
-  const handleBuyTicket = async (seatNumber: number, eventObjectId: string) => {
-    if (!address?.address) {
-      alert("Please connect your wallet first!");
+ const handleBuyTicket = async (seatNumber: number, eventObjectId: string) => {
+  if (!address?.address) {
+    alert("Please connect your wallet first!");
+    return;
+  }
+
+  setBuying(seatNumber);
+
+  try {
+    // Fetch the event object to get ticket price
+    const eventData = await client.getObject({
+      id: eventObjectId,
+      options: { showContent: true }
+    });
+
+    const content = eventData.data?.content as any;
+    const tickets = content?.fields?.available_tickets_to_buy || [];
+    const ticket = tickets.find((t: any) => 
+      t.fields?.seat_number === seatNumber || t.seat_number === seatNumber
+    );
+
+    if (!ticket) {
+      alert("Ticket not found!");
+      setBuying(null);
       return;
     }
 
-    setBuying(seatNumber);
+    const price = ticket.fields?.price || ticket.price;
 
-    try {
-      // Fetch user's coin objects
-      const coins = await client.getCoins({
-        owner: address.address,
-        coinType: "0x2::iota::IOTA",
-      });
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    
+    // ✅ FIX: Split coins from gas for payment
+    const [paymentCoin] = tx.splitCoins(tx.gas, [price]);
+    
+    tx.moveCall({
+      target: `${packageId}::independent_ticketing_system_nft::buy_ticket`,
+      arguments: [
+        paymentCoin,  // ✅ Use the split coin
+        tx.pure.u64(seatNumber),
+        tx.object(eventObjectId),
+      ],
+    });
 
-      if (!coins.data || coins.data.length === 0) {
-        alert("No IOTA coins found in your wallet!");
-        setBuying(null);
-        return;
-      }
-
-      // Use the first coin with sufficient balance
-      const coin = coins.data[0];
-
-      const tx = new Transaction();
-      tx.setGasBudget(50000000);
-      tx.moveCall({
-        target: `${packageId}::independent_ticketing_system_nft::buy_ticket`,
-        arguments: [
-          tx.object(coin.coinObjectId),
-          tx.pure.u64(seatNumber),
-          tx.object(eventObjectId),
-        ],
-      });
-
-      signAndExecuteTransaction(
-        {
-          transaction: tx,
+    signAndExecuteTransaction(
+      {
+        transaction: tx,
+      },
+      {
+        onSuccess: ({ digest }: { digest: any }) => {
+          client
+            .waitForTransaction({ digest, options: { showEffects: true } })
+            .then(() => {
+              alert(`Ticket ${seatNumber} purchased successfully!`);
+              setBuying(null);
+              refetchTickets();
+            });
         },
-        {
-          onSuccess: ({ digest }: { digest: any }) => {
-            client
-              .waitForTransaction({ digest, options: { showEffects: true } })
-              .then(() => {
-                alert(`Ticket ${seatNumber} purchased successfully!`);
-                setBuying(null);
-                // Refresh the ticket list
-                refetchTickets();
-              });
-          },
-          onError: (error: any) => {
-            console.error("Failed to buy ticket", error);
-            setBuying(null);
-            alert(`Error: ${error.message}`);
-          },
-        }
-      );
-    } catch (error: any) {
-      console.error("Error fetching coins:", error);
-      alert(`Error: ${error.message}`);
-      setBuying(null);
-    }
-  };
+        onError: (error: any) => {
+          console.error("Failed to buy ticket", error);
+          setBuying(null);
+          alert(`Error: ${error.message}`);
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error buying ticket:", error);
+    alert(`Error: ${error.message}`);
+    setBuying(null);
+  }
+};
 
-  const handleBuyResale = async (resaleObjectId: string, seatNumber: number) => {
-    if (!address?.address) {
-      alert("Please connect your wallet first!");
+const handleBuyResale = async (resaleObjectId: string, seatNumber: number) => {
+  if (!address?.address) {
+    alert("Please connect your wallet first!");
+    return;
+  }
+
+  setBuying(seatNumber);
+
+  try {
+    // Fetch resale object to get price and royalty info
+    const resaleData = await client.getObject({
+      id: resaleObjectId,
+      options: { showContent: true }
+    });
+
+    const content = resaleData.data?.content as any;
+    const price = content?.fields?.price;
+    const nft = content?.fields?.nft;
+    
+    if (!price || !nft) {
+      alert("Could not fetch resale details!");
+      setBuying(null);
       return;
     }
 
-    setBuying(seatNumber);
+    // Calculate total including royalty
+    const royaltyPercentage = nft.fields?.royalty_percentage || nft.royalty_percentage || 0;
+    const royaltyFee = Math.floor((price * royaltyPercentage) / 100);
+    const totalRequired = price + royaltyFee;
 
-    try {
-      // Fetch user's coin objects
-      const coins = await client.getCoins({
-        owner: address.address,
-        coinType: "0x2::iota::IOTA",
-      });
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    
+    // ✅ FIX: Split coins from gas for payment
+    const [paymentCoin] = tx.splitCoins(tx.gas, [totalRequired]);
+    
+    tx.moveCall({
+      target: `${packageId}::independent_ticketing_system_nft::buy_resale`,
+      arguments: [
+        paymentCoin,  // ✅ Use the split coin
+        tx.object(resaleObjectId),
+      ],
+    });
 
-      if (!coins.data || coins.data.length === 0) {
-        alert("No IOTA coins found in your wallet!");
-        setBuying(null);
-        return;
-      }
-
-      // Use the first coin with sufficient balance
-      const coin = coins.data[0];
-
-      const tx = new Transaction();
-      tx.setGasBudget(50000000);
-      tx.moveCall({
-        target: `${packageId}::independent_ticketing_system_nft::buy_resale`,
-        arguments: [
-          tx.object(coin.coinObjectId),
-          tx.object(resaleObjectId),
-        ],
-      });
-
-      signAndExecuteTransaction(
-        {
-          transaction: tx,
+    signAndExecuteTransaction(
+      {
+        transaction: tx,
+      },
+      {
+        onSuccess: ({ digest }: { digest: any }) => {
+          client
+            .waitForTransaction({ digest, options: { showEffects: true } })
+            .then(() => {
+              alert(`Resale ticket purchased successfully!`);
+              setBuying(null);
+              refetchTickets();
+            });
         },
-        {
-          onSuccess: ({ digest }: { digest: any }) => {
-            client
-              .waitForTransaction({ digest, options: { showEffects: true } })
-              .then(() => {
-                alert(`Resale ticket purchased successfully!`);
-                setBuying(null);
-                // Refresh the ticket list
-                refetchTickets();
-              });
-          },
-          onError: (error: any) => {
-            console.error("Failed to buy resale ticket", error);
-            setBuying(null);
-            alert(`Error: ${error.message}`);
-          },
-        }
-      );
-    } catch (error: any) {
-      console.error("Error fetching coins:", error);
-      alert(`Error: ${error.message}`);
-      setBuying(null);
-    }
-  };
+        onError: (error: any) => {
+          console.error("Failed to buy resale ticket", error);
+          setBuying(null);
+          alert(`Error: ${error.message}`);
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("Error buying resale ticket:", error);
+    alert(`Error: ${error.message}`);
+    setBuying(null);
+  }
+};
 
   return (
     <Box mt={"5"}>

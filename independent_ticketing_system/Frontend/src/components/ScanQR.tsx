@@ -20,7 +20,7 @@ export default function ScanQR() {
   const redemptionRegistry = useNetworkVariable("redemptionRegistry" as never);
 
   const client = new IotaClient({
-    url: getFullnodeUrl("testnet"),
+    url: getFullnodeUrl("devnet"),
   });
 
   const handleScan = async (result: any) => {

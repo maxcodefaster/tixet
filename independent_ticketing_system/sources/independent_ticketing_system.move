@@ -240,12 +240,14 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         nft1
     }
 
+    /// Buy a ticket from the primary marketplace
+    /// Accepts a Coin<IOTA> by value with the exact ticket price
     #[allow(lint(self_transfer))]
     public fun buy_ticket(
-    coin: &mut Coin<IOTA>,
-    seat_number: u64,
-    event_object: &mut EventObject,
-    ctx: &mut TxContext
+        payment_coin: Coin<IOTA>,
+        seat_number: u64,
+        event_object: &mut EventObject,
+        ctx: &mut TxContext
     ) {
         let sender = tx_context::sender(ctx);
         let mut i = 0;
@@ -256,9 +258,10 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             if (&current_nft.seat_number == seat_number) {
                 let mut deleted_nft = vector::remove(&mut event_object.available_tickets_to_buy, i);
 
-                let payment = coin.split(deleted_nft.price, ctx);
-                transfer::public_transfer(payment, deleted_nft.creator);
+                // Transfer the payment coin directly to the creator
+                transfer::public_transfer(payment_coin, deleted_nft.creator);
 
+                // Update ownership and transfer NFT
                 deleted_nft.owner = sender;
 
                 // Update tickets_sold counter
@@ -266,42 +269,58 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
                 event::emit(TicketBoughtSuccessfully {
                     name: deleted_nft.name,
-                    seat_number:deleted_nft.seat_number,
-                    owner:deleted_nft.owner,
-                    event_date:deleted_nft.event_date,
+                    seat_number: deleted_nft.seat_number,
+                    owner: deleted_nft.owner,
+                    event_date: deleted_nft.event_date,
                     message: string::utf8(b"NFT bought successfully"),
                 });
 
                 transfer::public_transfer(deleted_nft, sender);
-                break
+                return
             };
             i = i + 1;
         };
-        assert!(i <length,INVALID_TICKET_TO_BUY);
+        
+        // If ticket wasn't found, return payment and abort
+        transfer::public_transfer(payment_coin, sender);
+        abort INVALID_TICKET_TO_BUY
     }
 
+    /// Buy a resale ticket
+    /// Accepts payment_coin that includes both resale price and royalty fee
     #[allow(lint(self_transfer))]
-    public fun buy_resale(coin: &mut Coin<IOTA>, initiated_resale: InitiateResale,ctx: &mut TxContext) {
+    public fun buy_resale(
+        mut payment_coin: Coin<IOTA>, 
+        initiated_resale: InitiateResale,
+        ctx: &mut TxContext
+    ) {
         let sender = tx_context::sender(ctx);
-        let InitiateResale {id: id1,seller: seller1,buyer: _buyer1,price: price1,nft: mut nft1} = initiated_resale;
+        let InitiateResale {
+            id: id1,
+            seller: seller1,
+            buyer: _buyer1,
+            price: price1,
+            nft: mut nft1
+        } = initiated_resale;
 
-        // Calculate royalty on the resale price, not original price
-        let royalty_fee = (price1 * nft1.royalty_percentage) / 100;
-        let total_required = royalty_fee + price1;
-        assert!(coin.balance().value() >= total_required, NOT_ENOUGH_FUNDS);
+        // Calculate royalty on the resale price
+        let royalty_percentage = nft1.royalty_percentage;
+        let royalty_amount = (price1 * royalty_percentage) / 100;
+        
+        // Split the payment coin for royalty and seller payment
+        let royalty_coin = payment_coin.split(royalty_amount, ctx);
+        
+        // Pay royalty to original creator
+        transfer::public_transfer(royalty_coin, nft1.creator);
 
-        // Pay royalty to creator
-        let royalty_coin = coin.split(royalty_fee, ctx);
-        transfer::public_transfer(royalty_coin,nft1.creator);
+        // Pay seller (remaining amount in payment_coin is the resale price)
+        transfer::public_transfer(payment_coin, seller1);
 
         // Transfer NFT to buyer
         nft1.owner = sender;
-        transfer::public_transfer(nft1,sender);
+        transfer::public_transfer(nft1, sender);
 
-        // Pay seller
-        let payment_coin = coin.split(price1,ctx);
-        transfer::public_transfer(payment_coin,seller1);
-
+        // Delete the resale listing object
         object::delete(id1);
     }
 

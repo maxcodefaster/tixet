@@ -11,7 +11,7 @@ export default function ViewQR() {
   const [loading, setLoading] = useState<boolean>(true);
   const packageId = useNetworkVariable("packageId" as never);
   const client = new IotaClient({
-    url: getFullnodeUrl("testnet"),
+    url: getFullnodeUrl("devnet"),
   });
 
   useEffect(() => {

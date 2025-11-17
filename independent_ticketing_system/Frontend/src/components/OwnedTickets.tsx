@@ -15,7 +15,7 @@ export default function OwnedObjects() {
   const packageId = useNetworkVariable("packageId" as never);
   const [loading, setLoading] = useState<boolean>(true);
   const client = new IotaClient({
-    url: getFullnodeUrl("testnet"),
+    url: getFullnodeUrl("devnet"),
   });
   const { address } = useCreateForm();
   const fetch = () => {
