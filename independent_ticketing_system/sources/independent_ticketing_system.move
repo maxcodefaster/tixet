@@ -208,8 +208,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let sender = tx_context::sender(ctx);
         let InitiateResale {id: id1,seller: seller1,buyer: _buyer1,price: price1,nft: mut nft1} = initiated_resale;
 
-        let royalty_fee = (nft1.royalty_percentage/nft1.price)*100;
-        assert!(coin.balance().value()>royalty_fee,NOT_ENOUGH_FUNDS);
+        let royalty_fee = (nft1.price * nft1.royalty_percentage) / 100;
+        assert!(coin.balance().value() > royalty_fee, NOT_ENOUGH_FUNDS);
 
         let new_coin = coin.split(royalty_fee, ctx);
         transfer::public_transfer(new_coin,nft1.creator);
