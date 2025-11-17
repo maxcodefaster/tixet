@@ -16,9 +16,6 @@ export default function AvailableTickets() {
   const client = new IotaClient({
     url: getFullnodeUrl("devnet"),
   });
-  const indexerClient = new IotaClient({
-    url: "https://api.devnet.iota.cafe:443",
-  });
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
@@ -40,26 +37,23 @@ export default function AvailableTickets() {
       return;
     }
 
-    console.log("Discovering all EventObject instances...");
+    console.log("Discovering all EventObject instances using events...");
 
-    // Query all EventObject instances using indexer
-    const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
+    // Use queryEvents to discover EventObject instances
+    // Look for events emitted when EventObjects are created
+    const eventType = `${packageId}::independent_ticketing_system_nft::EventCreated`;
 
-    indexerClient.queryObjects({
-      filter: {
-        StructType: structType
-      },
-      options: {
-        showContent: true,
-        showType: true
-      }
+    client.queryEvents({
+      query: { MoveEventType: eventType },
+      limit: 50
     })
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
+          // Extract event object IDs from events
           const eventIds = res.data
-            .map((obj: any) => obj.data?.objectId)
+            .map((event: any) => event.parsedJson?.event_id || event.parsedJson?.id)
             .filter((id: any) => id);
-          console.log(`✅ Found ${eventIds.length} events:`, eventIds);
+          console.log(`✅ Found ${eventIds.length} events from creation events:`, eventIds);
           setEventObjects(eventIds);
         } else {
           console.warn("⚠️ No events found, marketplace will be empty");
@@ -68,6 +62,7 @@ export default function AvailableTickets() {
       })
       .catch((err) => {
         console.error("❌ Error querying events:", err);
+        console.log("ℹ️  Tip: Make sure your Move contract emits an EventCreated event");
         setEventObjects([]);
       });
   }, [packageId]);
@@ -138,32 +133,34 @@ export default function AvailableTickets() {
       return;
     }
 
-    const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
+    // Use queryEvents to discover resale listings
+    const resaleEventType = `${packageId}::independent_ticketing_system_nft::ResaleInitiated`;
 
-    indexerClient.queryObjects({
-      filter: {
-        StructType: resaleStructType
-      },
-      options: {
-        showContent: true,
-        showType: true
-      }
+    client.queryEvents({
+      query: { MoveEventType: resaleEventType },
+      limit: 50
     })
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
-          console.log(`✅ Found ${res.data.length} resale listings`);
+          console.log(`✅ Found ${res.data.length} resale listings from events`);
 
-          // Enrich resale tickets with event metadata
-          const enrichedResaleTickets = res.data.map((resaleTicket: any) => {
-            const eventId = resaleTicket.data?.content?.fields?.nft?.fields?.event_id;
-            if (eventId && eventMetadataMap.has(eventId)) {
-              return {
-                ...resaleTicket,
-                eventInfo: eventMetadataMap.get(eventId)
-              };
-            }
-            return resaleTicket;
-          });
+          // Map events to resale ticket data and enrich with event metadata
+          const enrichedResaleTickets = res.data
+            .map((event: any) => {
+              const resaleData = event.parsedJson;
+              if (!resaleData) return null;
+
+              const eventId = resaleData.event_id;
+              if (eventId && eventMetadataMap.has(eventId)) {
+                return {
+                  ...event,
+                  data: resaleData,
+                  eventInfo: eventMetadataMap.get(eventId)
+                };
+              }
+              return { ...event, data: resaleData };
+            })
+            .filter((ticket: any) => ticket !== null);
 
           setTickets((prevTickets) =>
             prevTickets ? [...prevTickets, ...enrichedResaleTickets] : [...enrichedResaleTickets],
