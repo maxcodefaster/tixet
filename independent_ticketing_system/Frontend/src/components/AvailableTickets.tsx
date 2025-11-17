@@ -39,74 +39,48 @@ export default function AvailableTickets() {
 
     console.log("Discovering all EventObject instances...");
 
-    // Use queryObjects from the SDK to find all EventObject instances
+    // Query all EventObject instances using indexer RPC
+    // Note: Full nodes don't support iotax_queryObjects, must use indexer
     const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
 
-    client.call('iotax_queryObjects', [{
-      filter: {
-        StructType: structType
+    const queryBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "iotax_queryObjects",
+      params: [{
+        filter: {
+          StructType: structType
+        },
+        options: {
+          showContent: true,
+          showType: true
+        }
+      }]
+    };
+
+    fetch("https://indexer.devnet.iota.cafe/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      options: {
-        showContent: true,
-        showType: true
-      }
-    }])
-      .then((response) => {
-        if (response.data && Array.isArray(response.data)) {
-          const eventIds = response.data
+      body: JSON.stringify(queryBody),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.result?.data && Array.isArray(res.result.data)) {
+          const eventIds = res.result.data
             .map((obj: any) => obj.data?.objectId)
             .filter((id: any) => id);
           console.log(`✅ Found ${eventIds.length} events:`, eventIds);
           setEventObjects(eventIds);
         } else {
-          console.warn("⚠️ No events found in queryObjects response");
+          console.warn("⚠️ No events found, marketplace will be empty");
           setEventObjects([]);
         }
       })
-      .catch((error) => {
-        console.error("❌ Error discovering events with SDK:", error);
-        console.log("Trying JSON-RPC fallback...");
-
-        // Fallback to JSON-RPC if SDK method fails
-        const queryBody = {
-          jsonrpc: "2.0",
-          id: 1,
-          method: "iotax_queryObjects",
-          params: [{
-            filter: {
-              StructType: structType
-            },
-            options: {
-              showContent: true,
-              showType: true
-            }
-          }]
-        };
-
-        fetch("https://indexer.devnet.iota.cafe/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(queryBody),
-        })
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.result?.data && Array.isArray(res.result.data)) {
-              const eventIds = res.result.data
-                .map((obj: any) => obj.data?.objectId)
-                .filter((id: any) => id);
-              console.log(`✅ Found ${eventIds.length} events via RPC:`, eventIds);
-              setEventObjects(eventIds);
-            } else {
-              console.warn("⚠️ No events found, marketplace will be empty");
-              setEventObjects([]);
-            }
-          })
-          .catch((err) => {
-            console.error("❌ Both SDK and RPC failed:", err);
-            setEventObjects([]);
-          });
+      .catch((err) => {
+        console.error("❌ Error querying events:", err);
+        setEventObjects([]);
       });
   }, [packageId]);
 
@@ -189,21 +163,35 @@ export default function AvailableTickets() {
 
     const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
 
-    client.call('iotax_queryObjects', [{
-      filter: {
-        StructType: resaleStructType
+    const resaleQueryBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "iotax_queryObjects",
+      params: [{
+        filter: {
+          StructType: resaleStructType
+        },
+        options: {
+          showContent: true,
+          showType: true
+        }
+      }]
+    };
+
+    fetch("https://indexer.devnet.iota.cafe/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      options: {
-        showContent: true,
-        showType: true
-      }
-    }])
-      .then((response) => {
-        if (response.data && Array.isArray(response.data)) {
-          console.log(`✅ Found ${response.data.length} resale listings`);
+      body: JSON.stringify(resaleQueryBody),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.result?.data && Array.isArray(res.result.data)) {
+          console.log(`✅ Found ${res.result.data.length} resale listings`);
 
           // Enrich resale tickets with event metadata
-          const enrichedResaleTickets = response.data.map((resaleTicket: any) => {
+          const enrichedResaleTickets = res.result.data.map((resaleTicket: any) => {
             const eventId = resaleTicket.data?.content?.fields?.nft?.fields?.event_id;
             if (eventId && eventMetadataMap.has(eventId)) {
               return {
