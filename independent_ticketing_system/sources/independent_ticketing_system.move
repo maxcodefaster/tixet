@@ -155,7 +155,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         nft: TicketNFT,
         updated_price:u64,
         ctx: &mut TxContext
-    ) {
+    ): InitiateResale {
         let sender = tx_context::sender(ctx);
         let original_price = nft.price;
 
@@ -163,8 +163,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let max_allowed_price = (original_price * MAX_RESALE_PERCENTAGE) / 100;
         assert!(updated_price <= max_allowed_price, RESALE_PRICE_TOO_HIGH);
 
-        // Create resale listing - transferred to seller for open marketplace
-        // Anyone can query all InitiateResale objects to see listings
+        // Create resale listing - returned to caller for composability
+        // Caller can transfer or use in programmable transactions
         let initiate_resale = InitiateResale {
             id: object::new(ctx),
             seller:sender,
@@ -173,8 +173,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             nft
         };
 
-        // Transfer to seller so they own the listing (open marketplace model)
-        transfer::public_transfer(initiate_resale, sender);
+        initiate_resale
     }
 
     /// Cancel a resale listing and return the ticket to the seller
@@ -182,7 +181,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     public fun cancel_resale(
         initiated_resale: InitiateResale,
         ctx: &mut TxContext
-    ) {
+    ): TicketNFT {
         let sender = tx_context::sender(ctx);
         let InitiateResale {id: id1, seller: seller1, buyer: _buyer1, price: _price1, nft: nft1} = initiated_resale;
 
@@ -192,8 +191,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         // Delete the InitiateResale object
         object::delete(id1);
 
-        // Return the NFT to the seller
-        transfer::public_transfer(nft1, sender);
+        // Return the NFT to caller for composability
+        nft1
     }
 
     #[allow(lint(self_transfer))]
