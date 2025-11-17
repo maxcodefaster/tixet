@@ -3,6 +3,7 @@ import { formDataType, OpenFormState } from "../type";
 import { burnTicket } from "./Burn";
 import { resellTicket } from "./resell";
 import { tranferTicket } from "./Transfer";
+import { cancelResale } from "./cancelResale";
 import { NavigateFunction } from "react-router-dom";
 
 export default (
@@ -42,6 +43,17 @@ export default (
       break;
     case "Transfer":
       tranferTicket(
+        formData,
+        resetNftFormData,
+        packageId,
+        signAndExecuteTransaction,
+        client,
+        navigate,
+        setLoading,
+      );
+      break;
+    case "CancelResale":
+      cancelResale(
         formData,
         resetNftFormData,
         packageId,

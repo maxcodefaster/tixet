@@ -45,3 +45,11 @@ export const nftOperations: OperationType[] = [
       path:"transferTicket",
     },
 ]
+
+export const resaleOperations: OperationType[] = [
+  {
+    name: "CancelResale",
+    description: "Cancel Resale",
+    path:"cancelResale",
+  },
+]
