@@ -9,7 +9,7 @@ import { useSignAndExecuteTransaction } from "@iota/dapp-kit";
 export default function AvailableTickets() {
   const [tickets, setTickets] = useState<null | any[]>(null);
   const [buying, setBuying] = useState<number | null>(null);
-  const eventOjbect = useNetworkVariable(
+  const eventObject = useNetworkVariable(
     "eventObject" as never
   );
   const packageId = useNetworkVariable("packageId" as never);
@@ -19,8 +19,8 @@ export default function AvailableTickets() {
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
   useEffect(() => {
-    // Check if eventOjbect is properly configured
-    if (!eventOjbect || eventOjbect === "<YOUR_EVENTOBJECT_ADDRESS>") {
+    // Check if eventObject is properly configured
+    if (!eventObject || eventObject === "<YOUR_EVENTOBJECT_ADDRESS>") {
       console.warn("Event object not configured in networkConfig.ts");
       setTickets([]);
       return;
@@ -31,7 +31,7 @@ export default function AvailableTickets() {
       jsonrpc: "2.0",
       id: 1,
       method: "iota_getObject",
-      params: [eventOjbect, { showContent: true }],
+      params: [eventObject, { showContent: true }],
     };
     fetch("https://indexer.devnet.iota.cafe/", {
       method: "POST",
@@ -79,7 +79,7 @@ export default function AvailableTickets() {
           console.error("Error fetching resale tickets:", error);
         });
     }
-  }, [eventOjbect, packageId, address?.address]);
+  }, [eventObject, packageId, address?.address]);
 
   const handleBuyTicket = async (seatNumber: number, price: string) => {
     if (!address?.address) {
@@ -112,7 +112,7 @@ export default function AvailableTickets() {
         arguments: [
           tx.object(coin.coinObjectId),
           tx.pure.u64(seatNumber),
-          tx.object(eventOjbect),
+          tx.object(eventObject),
         ],
       });
 

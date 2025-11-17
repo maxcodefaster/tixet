@@ -187,6 +187,9 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
                 deleted_nft.owner = sender;
 
+                // Update tickets_sold counter
+                event_object.tickets_sold = event_object.tickets_sold + 1;
+
                 event::emit(TicketBoughtSuccessfully {
                     name: deleted_nft.name,
                     seat_number:deleted_nft.seat_number,
@@ -208,18 +211,23 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let sender = tx_context::sender(ctx);
         let InitiateResale {id: id1,seller: seller1,buyer: _buyer1,price: price1,nft: mut nft1} = initiated_resale;
 
-        let royalty_fee = (nft1.price * nft1.royalty_percentage) / 100;
-        assert!(coin.balance().value() > royalty_fee, NOT_ENOUGH_FUNDS);
+        // Calculate royalty on the resale price, not original price
+        let royalty_fee = (price1 * nft1.royalty_percentage) / 100;
+        let total_required = royalty_fee + price1;
+        assert!(coin.balance().value() >= total_required, NOT_ENOUGH_FUNDS);
 
-        let new_coin = coin.split(royalty_fee, ctx);
-        transfer::public_transfer(new_coin,nft1.creator);
-        
+        // Pay royalty to creator
+        let royalty_coin = coin.split(royalty_fee, ctx);
+        transfer::public_transfer(royalty_coin,nft1.creator);
+
+        // Transfer NFT to buyer
         nft1.owner = sender;
         transfer::public_transfer(nft1,sender);
 
-        let new_coin = coin.split(price1,ctx);
+        // Pay seller
+        let payment_coin = coin.split(price1,ctx);
+        transfer::public_transfer(payment_coin,seller1);
 
-        transfer::public_transfer(new_coin,seller1);
         object::delete(id1);
     }
 
