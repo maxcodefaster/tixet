@@ -6,7 +6,6 @@ import { mintTicket } from "./Mint";
 import { resellTicket } from "./resell";
 import { tranferTicket } from "./Transfer";
 import { buyTicket } from "./buyTicket";
-import { enableTicketToBuy } from "./enableTicketToBuy";
 import { NavigateFunction } from "react-router-dom";
 
 export default (
@@ -81,18 +80,6 @@ export default (
       break;
     case "BuyTicket":
       buyTicket(
-        formData,
-        resetFormData,
-        packageId,
-        eventObject,
-        signAndExecuteTransaction,
-        client,
-        navigate,
-        setLoading,
-      );
-      break;
-    case "EnableTicketToBuy":
-      enableTicketToBuy(
         formData,
         resetFormData,
         packageId,

@@ -17,10 +17,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         price: u64
     }
 
-    public struct CreatorCap has key {
-        id: UID
-    }
-
     public struct InitiateResale has key, store {
         id: UID,
         nft:TicketNFT,
@@ -79,37 +75,18 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     #[error]
     const INVALID_TICKET_TO_BUY: vector<u8> = b"Unable to buy ticket";
     #[error]
-    const INVALID_TOTAL_SEAT: vector<u8> = b"Value should be greater than zero";
-    #[error]
     const TICKET_ALREADY_REDEEMED: vector<u8> = b"This ticket has already been redeemed";
     #[error]
     const INVALID_TICKET_COUNT: vector<u8> = b"Ticket count must be greater than zero";
 
     fun init(ctx: &mut TxContext) {
-        let sender = ctx.sender();
-        transfer::transfer(CreatorCap{
-            id: object::new(ctx)
-        },sender);
-
-        // Create default event object for backward compatibility
-        transfer::share_object(EventObject {
-            id: object::new(ctx),
-            event_name: string::utf8(b"Default Event"),
-            event_id: string::utf8(b"DEFAULT"),
-            event_date: 0,
-            venue: string::utf8(b"TBD"),
-            total_capacity: 1000,
-            tickets_sold: 0,
-            available_tickets_to_buy: vector::empty<TicketNFT>()
-        });
-
         transfer::share_object(RedemptionRegistry {
             id: object::new(ctx),
             redeemed_tickets: table::new<ID, RedemptionInfo>(ctx)
         });
     }
 
-    /// Create a new event with multiple tickets
+    /// Create a new event with multiple tickets and list them on the marketplace
     public fun create_event(
         event_name: string::String,
         event_id: string::String,
@@ -156,48 +133,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             tickets_sold: 0,
             available_tickets_to_buy: tickets
         });
-    }
-
-    /// Mint a single ticket for an existing event (backward compatibility)
-    #[allow(lint(self_transfer))]
-    public fun mint_ticket(
-        event_id: string::String,
-        event_date: u64,
-        royalty_percentage: u64,
-        event_object: &mut EventObject,
-        price: u64,
-        ctx: &mut TxContext
-    ) {
-        let sender = tx_context::sender(ctx);
-        assert!(event_object.tickets_sold < event_object.total_capacity, ALL_TICKETS_SOLD);
-        assert!(royalty_percentage >= 0 && royalty_percentage <= 100, INVALID_ROYALTY);
-
-        let name: string::String = string::utf8(b"Event Ticket NFT");
-
-        // Increment tickets_sold first, then use it as the seat number (seats: 1, 2, 3, ...)
-        event_object.tickets_sold = event_object.tickets_sold + 1;
-        let seat_number = event_object.tickets_sold;
-
-        let nft = TicketNFT {
-            id: object::new(ctx),
-            name,
-            creator: sender,
-            owner: sender,
-            event_id,
-            seat_number,
-            event_date,
-            royalty_percentage,
-            price
-        };
-
-        vector::push_back(&mut event_object.available_tickets_to_buy, nft);
-    }
-
-    public fun enable_ticket_to_buy(
-        nft:TicketNFT,
-        event_object: &mut EventObject
-    ) {
-        vector::push_back(&mut event_object.available_tickets_to_buy,nft);
     }
 
     public fun transfer_ticket(

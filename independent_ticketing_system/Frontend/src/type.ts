@@ -9,7 +9,7 @@ export interface ToggleFormProp {
 }
 
 export interface OpenFormState {
-    openForm: "Mint" | "Burn" | "Transfer" | "Resell" | "BuyResell" | "EnableTicketToBuy" | "BuyTicket" | "WhiteListBuyer" | "ViewQR" | "";
+    openForm: "Mint" | "Burn" | "Transfer" | "Resell" | "BuyResell" | "BuyTicket" | "ViewQR" | "";
 }
 
 export interface formDataType {

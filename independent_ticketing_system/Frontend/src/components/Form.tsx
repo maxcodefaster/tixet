@@ -27,11 +27,6 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
       subtitle: 'Create an event with multiple tickets and list them on the marketplace',
       icon: '🎫'
     },
-    EnableTicketToBuy: {
-      title: 'List Ticket for Sale',
-      subtitle: 'Move your ticket to the marketplace for buyers',
-      icon: '🏪'
-    },
     Transfer: {
       title: 'Transfer Ticket',
       subtitle: 'Send your ticket to another address',
@@ -426,7 +421,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
         {(openForm === "Transfer" ||
           openForm === "Resell" ||
-          openForm === "Burn" || openForm === "EnableTicketToBuy") && (
+          openForm === "Burn") && (
           <Form.Field name="" style={styles.formField}>
             <Form.Label style={styles.formLabel}>NFT ID</Form.Label>
             <Form.Control asChild>

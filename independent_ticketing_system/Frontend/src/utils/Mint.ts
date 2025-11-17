@@ -17,33 +17,18 @@ export const mintTicket = (
     const tx = new Transaction();
     tx.setGasBudget(50000000);
 
-    // If ticketCount is provided, use create_event; otherwise use mint_ticket for backward compatibility
-    if (formData.ticketCount && formData.eventName && formData.venue) {
-      tx.moveCall({
-        target: `${packageId}::independent_ticketing_system_nft::create_event`,
-        arguments: [
-          tx.pure.string(formData.eventName as string),
-          tx.pure.string(formData.eventId as string),
-          tx.pure.u64(formData.eventdate as string),
-          tx.pure.string(formData.venue as string),
-          tx.pure.u64(formData.ticketCount as string),
-          tx.pure.u64(formData.price as string),
-          tx.pure.u64(formData.royaltyPercentage as string),
-        ],
-      });
-    } else {
-      // Backward compatibility: mint single ticket
-      tx.moveCall({
-        target: `${packageId}::independent_ticketing_system_nft::mint_ticket`,
-        arguments: [
-          tx.pure.string(formData.eventId as string),
-          tx.pure.u64(formData.eventdate as string),
-          tx.pure.u64(formData.royaltyPercentage as string),
-          tx.object(eventObject),
-          tx.pure.u64(formData.price as string),
-        ],
-      });
-    }
+    tx.moveCall({
+      target: `${packageId}::independent_ticketing_system_nft::create_event`,
+      arguments: [
+        tx.pure.string(formData.eventName as string),
+        tx.pure.string(formData.eventId as string),
+        tx.pure.u64(formData.eventdate as string),
+        tx.pure.string(formData.venue as string),
+        tx.pure.u64(formData.ticketCount as string),
+        tx.pure.u64(formData.price as string),
+        tx.pure.u64(formData.royaltyPercentage as string),
+      ],
+    });
 
     return tx;
   };
