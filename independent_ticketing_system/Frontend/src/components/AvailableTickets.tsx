@@ -9,13 +9,25 @@ import { useSignAndExecuteTransaction } from "@iota/dapp-kit";
 export default function AvailableTickets() {
   const [tickets, setTickets] = useState<null | any[]>(null);
   const [buying, setBuying] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [eventObjects, setEventObjects] = useState<string[]>([]);
+  const [eventMetadataMap, setEventMetadataMap] = useState<Map<string, any>>(new Map());
   const packageId = useNetworkVariable("packageId" as never);
   const client = new IotaClient({
     url: getFullnodeUrl("testnet"),
   });
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+
+  // Function to refetch all tickets
+  const refetchTickets = () => {
+    setLoading(true);
+    setTickets([]);
+    // Trigger re-fetch by updating eventObjects
+    const currentEvents = [...eventObjects];
+    setEventObjects([]);
+    setTimeout(() => setEventObjects(currentEvents), 0);
+  };
 
   // Effect to discover all EventObject instances
   useEffect(() => {
@@ -154,9 +166,27 @@ export default function AvailableTickets() {
         const allTickets = results.flat();
         console.log(`Found ${allTickets.length} total tickets across all events`);
         setTickets(allTickets);
-      });
 
-    // Fetch all resale tickets from the open marketplace
+        // Build event metadata map for resale ticket enrichment
+        const metadataMap = new Map();
+        results.forEach(ticketsFromEvent => {
+          if (ticketsFromEvent.length > 0 && ticketsFromEvent[0].eventInfo) {
+            const eventInfo = ticketsFromEvent[0].eventInfo;
+            metadataMap.set(eventInfo.eventId, eventInfo);
+          }
+        });
+        setEventMetadataMap(metadataMap);
+        setLoading(false);
+      });
+  }, [eventObjects, packageId]);
+
+  // Effect to fetch resale tickets after event metadata is available
+  useEffect(() => {
+    if (eventMetadataMap.size === 0 && eventObjects.length > 0) {
+      // Wait for metadata to be populated
+      return;
+    }
+
     const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
 
     client.queryObjects({
@@ -171,8 +201,21 @@ export default function AvailableTickets() {
       .then((response) => {
         if (response.data && Array.isArray(response.data)) {
           console.log(`✅ Found ${response.data.length} resale listings`);
+
+          // Enrich resale tickets with event metadata
+          const enrichedResaleTickets = response.data.map((resaleTicket: any) => {
+            const eventId = resaleTicket.data?.content?.fields?.nft?.fields?.event_id;
+            if (eventId && eventMetadataMap.has(eventId)) {
+              return {
+                ...resaleTicket,
+                eventInfo: eventMetadataMap.get(eventId)
+              };
+            }
+            return resaleTicket;
+          });
+
           setTickets((prevTickets) =>
-            prevTickets ? [...prevTickets, ...response.data] : [...response.data],
+            prevTickets ? [...prevTickets, ...enrichedResaleTickets] : [...enrichedResaleTickets],
           );
         } else {
           console.log("No resale listings found");
@@ -181,7 +224,7 @@ export default function AvailableTickets() {
       .catch((error) => {
         console.error("Error fetching resale tickets:", error);
       });
-  }, [eventObjects, packageId]);
+  }, [eventMetadataMap, packageId]);
 
   const handleBuyTicket = async (seatNumber: number, price: string, eventObjectId: string) => {
     if (!address?.address) {
@@ -230,7 +273,7 @@ export default function AvailableTickets() {
                 alert(`Ticket ${seatNumber} purchased successfully!`);
                 setBuying(null);
                 // Refresh the ticket list
-                window.location.reload();
+                refetchTickets();
               });
           },
           onError: (error: any) => {
@@ -293,7 +336,7 @@ export default function AvailableTickets() {
                 alert(`Resale ticket purchased successfully!`);
                 setBuying(null);
                 // Refresh the ticket list
-                window.location.reload();
+                refetchTickets();
               });
           },
           onError: (error: any) => {
@@ -312,7 +355,11 @@ export default function AvailableTickets() {
 
   return (
     <Flex mt={"5"} justify={"center"}>
-      {tickets && tickets.length > 0 ? (
+      {loading ? (
+        <Flex justify={"center"} mt={"5"}>
+          <Heading align={"center"}>Loading marketplace...</Heading>
+        </Flex>
+      ) : tickets && tickets.length > 0 ? (
         tickets.map((ticket, index) => {
           // Detect if this is a resale ticket (has data.content structure from getOwnedObjects)
           const isResale = ticket.data?.content?.fields?.nft;

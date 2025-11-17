@@ -177,6 +177,25 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         transfer::public_transfer(initiate_resale, sender);
     }
 
+    /// Cancel a resale listing and return the ticket to the seller
+    /// Can only be called by the original seller who listed the ticket
+    public fun cancel_resale(
+        initiated_resale: InitiateResale,
+        ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(ctx);
+        let InitiateResale {id: id1, seller: seller1, buyer: _buyer1, price: _price1, nft: nft1} = initiated_resale;
+
+        // Only the seller can cancel their listing
+        assert!(seller1 == sender, b"Only the seller can cancel this listing");
+
+        // Delete the InitiateResale object
+        object::delete(id1);
+
+        // Return the NFT to the seller
+        transfer::public_transfer(nft1, sender);
+    }
+
     #[allow(lint(self_transfer))]
     public fun buy_ticket(
     coin: &mut Coin<IOTA>,
