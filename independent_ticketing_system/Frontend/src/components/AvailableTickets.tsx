@@ -49,9 +49,9 @@ export default function AvailableTickets() {
     })
       .then((res) => {
         if (res.data && Array.isArray(res.data)) {
-          // Extract event object IDs from events
+          // Extract event object IDs from EventCreated events
           const eventIds = res.data
-            .map((event: any) => event.parsedJson?.event_id || event.parsedJson?.id)
+            .map((event: any) => event.parsedJson?.event_object_id)
             .filter((id: any) => id);
           console.log(`✅ Found ${eventIds.length} events from creation events:`, eventIds);
           setEventObjects(eventIds);
@@ -144,27 +144,43 @@ export default function AvailableTickets() {
         if (res.data && Array.isArray(res.data)) {
           console.log(`✅ Found ${res.data.length} resale listings from events`);
 
-          // Map events to resale ticket data and enrich with event metadata
-          const enrichedResaleTickets = res.data
-            .map((event: any) => {
-              const resaleData = event.parsedJson;
-              if (!resaleData) return null;
+          // Fetch full resale object data for each resale listing
+          const resalePromises = res.data.map((event: any) => {
+            const resaleObjectId = event.parsedJson?.resale_object_id;
+            if (!resaleObjectId) return Promise.resolve(null);
 
-              const eventId = resaleData.event_id;
-              if (eventId && eventMetadataMap.has(eventId)) {
-                return {
-                  ...event,
-                  data: resaleData,
-                  eventInfo: eventMetadataMap.get(eventId)
-                };
-              }
-              return { ...event, data: resaleData };
+            return client.getObject({
+              id: resaleObjectId,
+              options: { showContent: true }
             })
-            .filter((ticket: any) => ticket !== null);
+              .then((resaleObj) => {
+                if (resaleObj.data?.content?.dataType === 'moveObject') {
+                  const fields = resaleObj.data.content.fields;
+                  const nftFields = fields?.nft?.fields;
+                  const eventId = nftFields?.event_id;
 
-          setTickets((prevTickets) =>
-            prevTickets ? [...prevTickets, ...enrichedResaleTickets] : [...enrichedResaleTickets],
-          );
+                  if (eventId && eventMetadataMap.has(eventId)) {
+                    return {
+                      data: resaleObj.data,
+                      eventInfo: eventMetadataMap.get(eventId)
+                    };
+                  }
+                  return { data: resaleObj.data };
+                }
+                return null;
+              })
+              .catch((err) => {
+                console.error(`Error fetching resale object ${resaleObjectId}:`, err);
+                return null;
+              });
+          });
+
+          Promise.all(resalePromises).then((resaleTickets) => {
+            const validResaleTickets = resaleTickets.filter((ticket) => ticket !== null);
+            setTickets((prevTickets) =>
+              prevTickets ? [...prevTickets, ...validResaleTickets] : [...validResaleTickets],
+            );
+          });
         } else {
           console.log("No resale listings found");
         }
