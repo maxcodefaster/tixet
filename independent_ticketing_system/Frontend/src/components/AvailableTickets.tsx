@@ -42,7 +42,7 @@ export default function AvailableTickets() {
     // Use queryObjects from the SDK to find all EventObject instances
     const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
 
-    client.queryObjects({
+    client.call('iotax_queryObjects', [{
       filter: {
         StructType: structType
       },
@@ -50,7 +50,7 @@ export default function AvailableTickets() {
         showContent: true,
         showType: true
       }
-    })
+    }])
       .then((response) => {
         if (response.data && Array.isArray(response.data)) {
           const eventIds = response.data
@@ -189,7 +189,7 @@ export default function AvailableTickets() {
 
     const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
 
-    client.queryObjects({
+    client.call('iotax_queryObjects', [{
       filter: {
         StructType: resaleStructType
       },
@@ -197,7 +197,7 @@ export default function AvailableTickets() {
         showContent: true,
         showType: true
       }
-    })
+    }])
       .then((response) => {
         if (response.data && Array.isArray(response.data)) {
           console.log(`✅ Found ${response.data.length} resale listings`);
