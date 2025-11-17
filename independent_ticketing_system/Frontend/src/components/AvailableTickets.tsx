@@ -214,7 +214,7 @@ export default function AvailableTickets() {
       });
   }, [eventMetadataMap, packageId]);
 
-  const handleBuyTicket = async (seatNumber: number, price: string, eventObjectId: string) => {
+  const handleBuyTicket = async (seatNumber: number, eventObjectId: string) => {
     if (!address?.address) {
       alert("Please connect your wallet first!");
       return;
@@ -390,7 +390,7 @@ export default function AvailableTickets() {
                   <Button
                     onClick={() => isResale
                       ? handleBuyResale(resaleObjectId!, fields.seat_number)
-                      : handleBuyTicket(fields.seat_number, fields.price, eventInfo?.eventObjectId)
+                      : handleBuyTicket(fields.seat_number, eventInfo?.eventObjectId)
                     }
                     disabled={buying === fields.seat_number}
                     style={{

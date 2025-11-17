@@ -38,6 +38,7 @@ export const useCreateForm = () => {
     price: "",
     nft: "",
     recipient: "",
+    initiatedResell: "",
   });
 
   const updateFormData = (key: keyof formDataType, value: string) => {
@@ -79,6 +80,7 @@ export const useCreateForm = () => {
       price: "",
       nft: "",
       recipient: "",
+      initiatedResell: "",
     });
   };
 
