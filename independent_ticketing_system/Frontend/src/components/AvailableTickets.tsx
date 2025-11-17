@@ -14,7 +14,7 @@ export default function AvailableTickets() {
   const [eventMetadataMap, setEventMetadataMap] = useState<Map<string, any>>(new Map());
   const packageId = useNetworkVariable("packageId" as never);
   const client = new IotaClient({
-    url: getFullnodeUrl("testnet"),
+    url: getFullnodeUrl("devnet"),
   });
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
