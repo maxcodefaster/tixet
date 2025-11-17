@@ -19,6 +19,9 @@ export const useCreateForm = () => {
   const [formData, setFormData] = useState<formDataType>({
     coin: "",
     eventId: "",
+    eventName: "",
+    venue: "",
+    ticketCount: "",
     eventdate: "",
     royaltyPercentage: "",
     packageCreator: "",
@@ -55,6 +58,9 @@ export const useCreateForm = () => {
     setFormData({
       coin: "",
       eventId: "",
+      eventName: "",
+      venue: "",
+      ticketCount: "",
       eventdate: "",
       royaltyPercentage: "",
       packageCreator: "",
@@ -63,6 +69,8 @@ export const useCreateForm = () => {
       nft: "",
       recipient: "",
       initiatedResell: "",
+      seatNumber: "",
+      buyableTickets: "",
     });
   };
 

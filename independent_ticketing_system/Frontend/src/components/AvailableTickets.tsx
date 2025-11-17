@@ -38,8 +38,8 @@ export default function AvailableTickets() {
     })
       .then((res) => res.json())
       .then((res) => {
-        if (res.result?.data?.content?.fields?.nfts) {
-          setTickets(res.result.data.content.fields.nfts);
+        if (res.result?.data?.content?.fields?.available_tickets_to_buy) {
+          setTickets(res.result.data.content.fields.available_tickets_to_buy);
         } else if (res.error) {
           console.error("Error fetching event tickets:", res.error);
           setTickets([]);
@@ -79,20 +79,23 @@ export default function AvailableTickets() {
   return (
     <Flex mt={"5"} justify={"center"}>
       {tickets && tickets.length > 0 ? (
-        tickets.map((ticket, index) => (
-          <Box width="500px" key={index}>
-            <Card size="3" style={{ background: "#1e1e1e" }}>
-              <Flex direction={"column"}>
-                <Text size={"5"}>{ticket.name}</Text>
-                <Text size={"3"}>{ticket.seat_number}</Text>
-                <Text size={"2"}>{ticket.owner}</Text>
-                <Text size={"2"}>{ticket.event_id}</Text>
-                <Text size={"2"}>{ticket.event_date}</Text>
-                <Text size={"2"}>{ticket.price}</Text>
-              </Flex>
-            </Card>
-          </Box>
-        ))
+        tickets.map((ticket, index) => {
+          const fields = ticket.fields || ticket;
+          return (
+            <Box width="500px" key={index}>
+              <Card size="3" style={{ background: "#1e1e1e" }}>
+                <Flex direction={"column"}>
+                  <Text size={"5"}>{fields.name}</Text>
+                  <Text size={"3"}>Seat: {fields.seat_number}</Text>
+                  <Text size={"2"}>Owner: {fields.owner}</Text>
+                  <Text size={"2"}>Event ID: {fields.event_id}</Text>
+                  <Text size={"2"}>Date: {fields.event_date}</Text>
+                  <Text size={"2"}>Price: {fields.price}</Text>
+                </Flex>
+              </Card>
+            </Box>
+          );
+        })
       ) : (
         <Flex justify={"center"} mt={"5"}>
           <Heading align={"center"}>No Tickets Available Now!</Heading>

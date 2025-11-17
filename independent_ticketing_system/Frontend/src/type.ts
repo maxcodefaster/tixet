@@ -15,6 +15,9 @@ export interface OpenFormState {
 export interface formDataType {
     coin?:string,
     eventId?:string,
+    eventName?:string,
+    venue?:string,
+    ticketCount?:string,
     eventdate?:string,
     royaltyPercentage?:string,
     packageCreator?:string,

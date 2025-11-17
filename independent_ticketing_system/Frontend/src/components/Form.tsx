@@ -23,9 +23,9 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
   const formTitles: Record<string, { title: string; subtitle: string; icon: string }> = {
     Mint: {
-      title: 'Create Ticket',
-      subtitle: 'Mint a ticket and list it on the marketplace',
-      icon: '✨'
+      title: 'Create Event',
+      subtitle: 'Create an event with multiple tickets and list them on the marketplace',
+      icon: '🎫'
     },
     EnableTicketToBuy: {
       title: 'List Ticket for Sale',
@@ -110,13 +110,35 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
 
         {openForm === "Mint" && (
           <Form.Field name="" style={styles.formField}>
+            <Form.Label style={styles.formLabel}>Event Name</Form.Label>
+            <Form.Control asChild>
+              <TextField.Root
+                value={formData?.eventName}
+                onChange={(e) => updateFormData("eventName", e.target.value)}
+                size="2"
+                placeholder="e.g., Summer Music Festival 2025"
+              />
+            </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              Display name for your event
+            </p>
+          </Form.Field>
+        )}
+
+        {openForm === "Mint" && (
+          <Form.Field name="" style={styles.formField}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: '0.5rem'
             }}>
-              <Form.Label style={styles.formLabel}>Event Name</Form.Label>
+              <Form.Label style={styles.formLabel}>Event ID</Form.Label>
               <span style={{
                 fontSize: '0.75rem',
                 color: 'var(--electric-cyan)',
@@ -151,7 +173,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
                 margin: 0,
                 lineHeight: 1.5,
               }}>
-                💡 <strong style={{ color: 'var(--electric-cyan)' }}>Pro tip:</strong> Use a unique, memorable name for your event. This becomes the permanent blockchain identifier.
+                💡 <strong style={{ color: 'var(--electric-cyan)' }}>Pro tip:</strong> Use a unique, memorable identifier for your event. This becomes the permanent blockchain identifier.
               </p>
               <p style={{
                 fontSize: '0.75rem',
@@ -162,6 +184,28 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
                 Examples: "coachella-2025", "eth-denver", "local-concert-oct"
               </p>
             </div>
+          </Form.Field>
+        )}
+
+        {openForm === "Mint" && (
+          <Form.Field name="" style={styles.formField}>
+            <Form.Label style={styles.formLabel}>Venue</Form.Label>
+            <Form.Control asChild>
+              <TextField.Root
+                value={formData?.venue}
+                onChange={(e) => updateFormData("venue", e.target.value)}
+                size="2"
+                placeholder="e.g., Madison Square Garden, New York"
+              />
+            </Form.Control>
+            <p style={{
+              fontSize: '0.85rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              Location where the event will take place
+            </p>
           </Form.Field>
         )}
 
@@ -216,6 +260,48 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
               fontFamily: 'var(--font-mono)',
             }}>
               Select the date when your event will take place
+            </p>
+          </Form.Field>
+        )}
+
+        {openForm === "Mint" && (
+          <Form.Field name="" style={styles.formField}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.5rem'
+            }}>
+              <Form.Label style={styles.formLabel}>Number of Tickets</Form.Label>
+              <span style={{
+                fontSize: '0.75rem',
+                color: 'var(--lime-flash)',
+                fontFamily: 'var(--font-mono)',
+                background: 'rgba(204, 255, 0, 0.1)',
+                padding: '0.25rem 0.75rem',
+                borderRadius: '4px',
+                border: '1px solid rgba(204, 255, 0, 0.2)',
+              }}>
+                CAPACITY
+              </span>
+            </div>
+            <Form.Control asChild>
+              <TextField.Root
+                value={formData?.ticketCount}
+                onChange={(e) => updateFormData("ticketCount", e.target.value)}
+                size="2"
+                placeholder="e.g., 100"
+                type="number"
+                min="1"
+              />
+            </Form.Control>
+            <p style={{
+              fontSize: '0.8rem',
+              color: 'rgba(240, 244, 248, 0.6)',
+              marginTop: '0.5rem',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              🎟️ Total number of tickets to create for this event
             </p>
           </Form.Field>
         )}

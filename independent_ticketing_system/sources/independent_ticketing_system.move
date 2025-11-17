@@ -14,8 +14,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         seat_number: u64,
         event_date: u64,
         royalty_percentage: u64,
-        price: u64,
-        whitelisted_addresses: vector<address>
+        price: u64
     }
 
     public struct CreatorCap has key {
@@ -32,8 +31,13 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
     public struct EventObject has key, store {
         id: UID,
-        available_tickets_to_buy: vector<TicketNFT>,
-        total_seat: u64
+        event_name: string::String,
+        event_id: string::String,
+        event_date: u64,
+        venue: string::String,
+        total_capacity: u64,
+        tickets_sold: u64,
+        available_tickets_to_buy: vector<TicketNFT>
     }
 
     public struct RedemptionRegistry has key {
@@ -78,6 +82,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     const INVALID_TOTAL_SEAT: vector<u8> = b"Value should be greater than zero";
     #[error]
     const TICKET_ALREADY_REDEEMED: vector<u8> = b"This ticket has already been redeemed";
+    #[error]
+    const INVALID_TICKET_COUNT: vector<u8> = b"Ticket count must be greater than zero";
 
     fun init(ctx: &mut TxContext) {
         let sender = ctx.sender();
@@ -85,10 +91,16 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             id: object::new(ctx)
         },sender);
 
+        // Create default event object for backward compatibility
         transfer::share_object(EventObject {
             id: object::new(ctx),
-            available_tickets_to_buy: vector::empty<TicketNFT>(),
-            total_seat: 300
+            event_name: string::utf8(b"Default Event"),
+            event_id: string::utf8(b"DEFAULT"),
+            event_date: 0,
+            venue: string::utf8(b"TBD"),
+            total_capacity: 1000,
+            tickets_sold: 0,
+            available_tickets_to_buy: vector::empty<TicketNFT>()
         });
 
         transfer::share_object(RedemptionRegistry {
@@ -97,26 +109,74 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         });
     }
 
+    /// Create a new event with multiple tickets
+    public fun create_event(
+        event_name: string::String,
+        event_id: string::String,
+        event_date: u64,
+        venue: string::String,
+        ticket_count: u64,
+        ticket_price: u64,
+        royalty_percentage: u64,
+        ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(ctx);
+        assert!(ticket_count > 0, INVALID_TICKET_COUNT);
+        assert!(royalty_percentage >= 0 && royalty_percentage <= 100, INVALID_ROYALTY);
+
+        let mut tickets = vector::empty<TicketNFT>();
+        let ticket_name = string::utf8(b"Event Ticket NFT");
+
+        // Create all tickets for this event
+        let mut i = 1;
+        while (i <= ticket_count) {
+            let ticket = TicketNFT {
+                id: object::new(ctx),
+                name: ticket_name,
+                creator: sender,
+                owner: sender,
+                event_id,
+                seat_number: i,
+                event_date,
+                royalty_percentage,
+                price: ticket_price
+            };
+            vector::push_back(&mut tickets, ticket);
+            i = i + 1;
+        };
+
+        // Create and share the event object with all tickets
+        transfer::share_object(EventObject {
+            id: object::new(ctx),
+            event_name,
+            event_id,
+            event_date,
+            venue,
+            total_capacity: ticket_count,
+            tickets_sold: 0,
+            available_tickets_to_buy: tickets
+        });
+    }
+
+    /// Mint a single ticket for an existing event (backward compatibility)
     #[allow(lint(self_transfer))]
     public fun mint_ticket(
         event_id: string::String,
         event_date: u64,
-        royalty_percentage :u64,
+        royalty_percentage: u64,
         event_object: &mut EventObject,
         price: u64,
         ctx: &mut TxContext
     ) {
         let sender = tx_context::sender(ctx);
-        assert!(event_object.total_seat>0,ALL_TICKETS_SOLD);
+        assert!(event_object.tickets_sold < event_object.total_capacity, ALL_TICKETS_SOLD);
         assert!(royalty_percentage >= 0 && royalty_percentage <= 100, INVALID_ROYALTY);
-
 
         let name: string::String = string::utf8(b"Event Ticket NFT");
 
-        let nft_count = event_object.total_seat;
-
-        let mut whitelisted_addresses = vector::empty<address>();
-        vector::push_back(&mut whitelisted_addresses, sender);
+        // Increment tickets_sold first, then use it as the seat number (seats: 1, 2, 3, ...)
+        event_object.tickets_sold = event_object.tickets_sold + 1;
+        let seat_number = event_object.tickets_sold;
 
         let nft = TicketNFT {
             id: object::new(ctx),
@@ -124,14 +184,11 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             creator: sender,
             owner: sender,
             event_id,
-            seat_number:event_object.total_seat,
+            seat_number,
             event_date,
             royalty_percentage,
-            price,
-            whitelisted_addresses
+            price
         };
-
-        set_total_seat(nft_count-1,event_object);
 
         vector::push_back(&mut event_object.available_tickets_to_buy, nft);
     }
@@ -269,8 +326,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
 
     #[allow(unused_variable)]
     public fun burn(nft: TicketNFT, ctx: &mut TxContext) {
-
-        let TicketNFT { id,
+        let TicketNFT {
+            id,
             name,
             creator,
             owner,
@@ -278,15 +335,11 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             seat_number,
             event_date,
             royalty_percentage,
-            price,
-            whitelisted_addresses } = nft;
+            price
+        } = nft;
         object::delete(id);
     }
 
-    fun set_total_seat(value:u64,event_object: &mut EventObject) {
-        assert!(value>0,INVALID_TOTAL_SEAT);
-        event_object.total_seat = value;
-    }
 
     public fun is_redeemed(ticket_id: ID, registry: &RedemptionRegistry): bool {
         table::contains(&registry.redeemed_tickets, ticket_id)
