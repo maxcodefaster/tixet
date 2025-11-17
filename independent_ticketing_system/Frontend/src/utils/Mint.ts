@@ -7,7 +7,6 @@ export const mintTicket = (
   formData: formDataType,
   setFormData: React.Dispatch<React.SetStateAction<formDataType>>,
   packageId: any,
-  eventObject: any,
   signAndExecuteTransaction: any,
   client: IotaClient,
   navigate: NavigateFunction,

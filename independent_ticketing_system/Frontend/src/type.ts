@@ -39,5 +39,6 @@ export interface OperationType{
 export interface NftFormDataType {
     price:string,
     nft:string,
-    recipient:string
+    recipient:string,
+    initiatedResell?:string
 }

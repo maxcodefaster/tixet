@@ -74,8 +74,6 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     #[error]
     const INVALID_ROYALTY: vector<u8> = b"Royalty percentage must be between 0 and 100";
     #[error]
-    const ALL_TICKETS_SOLD: vector<u8> = b"All tickets has been sold out";
-    #[error]
     const INVALID_TICKET_TO_BUY: vector<u8> = b"Unable to buy ticket";
     #[error]
     const TICKET_ALREADY_REDEEMED: vector<u8> = b"This ticket has already been redeemed";
@@ -83,6 +81,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     const INVALID_TICKET_COUNT: vector<u8> = b"Ticket count must be greater than zero";
     #[error]
     const RESALE_PRICE_TOO_HIGH: vector<u8> = b"Resale price exceeds maximum allowed markup";
+    #[error]
+    const UNAUTHORIZED_CANCEL: vector<u8> = b"Only the seller can cancel this listing";
 
     fun init(ctx: &mut TxContext) {
         transfer::share_object(RedemptionRegistry {
@@ -187,7 +187,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let InitiateResale {id: id1, seller: seller1, buyer: _buyer1, price: _price1, nft: nft1} = initiated_resale;
 
         // Only the seller can cancel their listing
-        assert!(seller1 == sender, b"Only the seller can cancel this listing");
+        assert!(seller1 == sender, UNAUTHORIZED_CANCEL);
 
         // Delete the InitiateResale object
         object::delete(id1);

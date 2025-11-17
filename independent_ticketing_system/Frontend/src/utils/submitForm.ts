@@ -27,7 +27,6 @@ export default (
         formData,
         resetFormData,
         packageId,
-        eventObject,
         signAndExecuteTransaction,
         client,
         navigate,
