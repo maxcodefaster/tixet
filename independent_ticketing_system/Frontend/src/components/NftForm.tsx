@@ -37,20 +37,25 @@ const NftForm = ({ openForm, nft }: { openForm: OpenFormState["openForm"],nft:st
         </Form.Field>
 
         {openForm === "Resell" && (
-          <Form.Field name="" style={styles.formField}>
-            <Form.Label style={styles.formLabel}>Price</Form.Label>
-            <Form.Control asChild>
-              <TextField.Root
-                value={nftFormData.price}
-                onChange={(e) => updateNftFormData("price", e.target.value)}
-                size="2"
-                placeholder="Price"
-              />
-            </Form.Control>
-          </Form.Field>
+          <>
+            <Form.Field name="" style={styles.formField}>
+              <Form.Label style={styles.formLabel}>Price (max 200% of original)</Form.Label>
+              <Form.Control asChild>
+                <TextField.Root
+                  value={nftFormData.price}
+                  onChange={(e) => updateNftFormData("price", e.target.value)}
+                  size="2"
+                  placeholder="Enter resale price in IOTA"
+                />
+              </Form.Control>
+            </Form.Field>
+            <p style={{ fontSize: "0.875rem", color: "#aaa", marginTop: "-0.5rem", marginBottom: "1rem" }}>
+              Note: Resale price cannot exceed 200% of the original ticket price. Transaction will fail if price cap is exceeded.
+            </p>
+          </>
         )}
 
-        {openForm!=="Burn" && <Form.Field name="" style={styles.formField}>
+        {openForm === "Transfer" && <Form.Field name="" style={styles.formField}>
           <Form.Label style={styles.formLabel}>Recipient</Form.Label>
           <Form.Control asChild>
             <TextField.Root

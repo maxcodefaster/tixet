@@ -16,16 +16,20 @@ export const mintTicket = (
   const tx = () => {
     const tx = new Transaction();
     tx.setGasBudget(50000000);
+
     tx.moveCall({
-      target: `${packageId}::independent_ticketing_system_nft::mint_ticket`,
+      target: `${packageId}::independent_ticketing_system_nft::create_event`,
       arguments: [
+        tx.pure.string(formData.eventName as string),
         tx.pure.string(formData.eventId as string),
         tx.pure.u64(formData.eventdate as string),
-        tx.pure.u64(formData.royaltyPercentage as string),
-        tx.object(eventObject),
+        tx.pure.string(formData.venue as string),
+        tx.pure.u64(formData.ticketCount as string),
         tx.pure.u64(formData.price as string),
+        tx.pure.u64(formData.royaltyPercentage as string),
       ],
     });
+
     return tx;
   };
   signAndExecuteTransaction(
@@ -40,6 +44,9 @@ export const mintTicket = (
             setFormData({
               coin: "",
               eventId: "",
+              eventName: "",
+              venue: "",
+              ticketCount: "",
               eventdate: "",
               royaltyPercentage: "",
               packageCreator: "",
@@ -49,7 +56,7 @@ export const mintTicket = (
               recipient: "",
               initiatedResell: "",
             });
-            alert("Transaction successfull!");
+            alert("Event created successfully with all tickets!");
             setLoading(false);
             navigate("/");
           });

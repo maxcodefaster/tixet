@@ -9,12 +9,15 @@ export interface ToggleFormProp {
 }
 
 export interface OpenFormState {
-    openForm: "Mint" | "Burn" | "Transfer" | "Resell" | "BuyResell" | "EnableTicketToBuy" | "BuyTicket" | "WhiteListBuyer" | "ViewQR" | "";
+    openForm: "Mint" | "Burn" | "Transfer" | "Resell" | "BuyResell" | "BuyTicket" | "ViewQR" | "";
 }
 
 export interface formDataType {
     coin?:string,
     eventId?:string,
+    eventName?:string,
+    venue?:string,
+    ticketCount?:string,
     eventdate?:string,
     royaltyPercentage?:string,
     packageCreator?:string,

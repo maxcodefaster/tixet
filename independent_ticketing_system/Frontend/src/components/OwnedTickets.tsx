@@ -58,13 +58,6 @@ export default function OwnedObjects() {
     <Flex mt={"5"} direction={"column"} justify={"center"}>
       {tickets && tickets.length > 0 ? (
         <>
-          <Flex direction={"row"} ml={"9"} mb={"5"}>
-            <Heading size={"3"}>Note: </Heading>
-            <Text size={"3"}>
-              Ensure that the recipient user is whitelisted before allowing the
-              resale of the ticket.
-            </Text>
-          </Flex>
           <Grid
             columns="3"
             gap="3"
