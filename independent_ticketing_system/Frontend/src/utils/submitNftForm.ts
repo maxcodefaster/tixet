@@ -16,6 +16,7 @@ export default (
   client: IotaClient,
   navigate: NavigateFunction,
   setLoading: any,
+  senderAddress?: string,
 ) => {
   e.preventDefault();
   switch (openForm) {
@@ -39,6 +40,7 @@ export default (
         client,
         navigate,
         setLoading,
+        senderAddress,
       );
       break;
     case "Transfer":

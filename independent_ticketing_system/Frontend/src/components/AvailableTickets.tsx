@@ -37,41 +37,23 @@ export default function AvailableTickets() {
       return;
     }
 
-    console.log("Discovering all EventObject instances...");
+    console.log("Discovering all EventObject instances using events...");
 
-    // Query all EventObject instances using indexer RPC
-    // Note: Full nodes don't support iotax_queryObjects, must use indexer
-    const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
+    // Use queryEvents to discover EventObject instances
+    // Look for events emitted when EventObjects are created
+    const eventType = `${packageId}::independent_ticketing_system_nft::EventCreated`;
 
-    const queryBody = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iotax_queryObjects",
-      params: [{
-        filter: {
-          StructType: structType
-        },
-        options: {
-          showContent: true,
-          showType: true
-        }
-      }]
-    };
-
-    fetch("https://indexer.devnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(queryBody),
+    client.queryEvents({
+      query: { MoveEventType: eventType },
+      limit: 50
     })
-      .then((res) => res.json())
       .then((res) => {
-        if (res.result?.data && Array.isArray(res.result.data)) {
-          const eventIds = res.result.data
-            .map((obj: any) => obj.data?.objectId)
+        if (res.data && Array.isArray(res.data)) {
+          // Extract event object IDs from EventCreated events
+          const eventIds = res.data
+            .map((event: any) => event.parsedJson?.event_object_id)
             .filter((id: any) => id);
-          console.log(`✅ Found ${eventIds.length} events:`, eventIds);
+          console.log(`✅ Found ${eventIds.length} events from creation events:`, eventIds);
           setEventObjects(eventIds);
         } else {
           console.warn("⚠️ No events found, marketplace will be empty");
@@ -80,6 +62,7 @@ export default function AvailableTickets() {
       })
       .catch((err) => {
         console.error("❌ Error querying events:", err);
+        console.log("ℹ️  Tip: Make sure your Move contract emits an EventCreated event");
         setEventObjects([]);
       });
   }, [packageId]);
@@ -95,29 +78,18 @@ export default function AvailableTickets() {
 
     // Fetch tickets from all events
     const fetchPromises = eventObjects.map((eventId) => {
-      const body = {
-        jsonrpc: "2.0",
-        id: 1,
-        method: "iota_getObject",
-        params: [eventId, { showContent: true }],
-      };
-
-      return fetch("https://indexer.devnet.iota.cafe/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+      return client.getObject({
+        id: eventId,
+        options: { showContent: true }
       })
-        .then((res) => res.json())
         .then((res) => {
-          if (res.result?.data?.content?.fields?.available_tickets_to_buy) {
-            const tickets = res.result.data.content.fields.available_tickets_to_buy;
+          if (res.data?.content?.dataType === 'moveObject' && res.data.content.fields?.available_tickets_to_buy) {
+            const tickets = res.data.content.fields.available_tickets_to_buy;
             const eventInfo = {
-              eventName: res.result.data.content.fields.event_name,
-              eventId: res.result.data.content.fields.event_id,
-              venue: res.result.data.content.fields.venue,
-              eventDate: res.result.data.content.fields.event_date,
+              eventName: res.data.content.fields.event_name,
+              eventId: res.data.content.fields.event_id,
+              venue: res.data.content.fields.venue,
+              eventDate: res.data.content.fields.event_date,
               eventObjectId: eventId
             };
             // Attach event info to each ticket
@@ -161,50 +133,54 @@ export default function AvailableTickets() {
       return;
     }
 
-    const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
+    // Use queryEvents to discover resale listings
+    const resaleEventType = `${packageId}::independent_ticketing_system_nft::ResaleInitiated`;
 
-    const resaleQueryBody = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iotax_queryObjects",
-      params: [{
-        filter: {
-          StructType: resaleStructType
-        },
-        options: {
-          showContent: true,
-          showType: true
-        }
-      }]
-    };
-
-    fetch("https://indexer.devnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(resaleQueryBody),
+    client.queryEvents({
+      query: { MoveEventType: resaleEventType },
+      limit: 50
     })
-      .then((res) => res.json())
       .then((res) => {
-        if (res.result?.data && Array.isArray(res.result.data)) {
-          console.log(`✅ Found ${res.result.data.length} resale listings`);
+        if (res.data && Array.isArray(res.data)) {
+          console.log(`✅ Found ${res.data.length} resale listings from events`);
 
-          // Enrich resale tickets with event metadata
-          const enrichedResaleTickets = res.result.data.map((resaleTicket: any) => {
-            const eventId = resaleTicket.data?.content?.fields?.nft?.fields?.event_id;
-            if (eventId && eventMetadataMap.has(eventId)) {
-              return {
-                ...resaleTicket,
-                eventInfo: eventMetadataMap.get(eventId)
-              };
-            }
-            return resaleTicket;
+          // Fetch full resale object data for each resale listing
+          const resalePromises = res.data.map((event: any) => {
+            const resaleObjectId = event.parsedJson?.resale_object_id;
+            if (!resaleObjectId) return Promise.resolve(null);
+
+            return client.getObject({
+              id: resaleObjectId,
+              options: { showContent: true }
+            })
+              .then((resaleObj) => {
+                if (resaleObj.data?.content?.dataType === 'moveObject') {
+                  const fields = resaleObj.data.content.fields;
+                  const nftFields = fields?.nft?.fields;
+                  const eventId = nftFields?.event_id;
+
+                  if (eventId && eventMetadataMap.has(eventId)) {
+                    return {
+                      data: resaleObj.data,
+                      eventInfo: eventMetadataMap.get(eventId)
+                    };
+                  }
+                  return { data: resaleObj.data };
+                }
+                return null;
+              })
+              .catch((err) => {
+                console.error(`Error fetching resale object ${resaleObjectId}:`, err);
+                return null;
+              });
           });
 
-          setTickets((prevTickets) =>
-            prevTickets ? [...prevTickets, ...enrichedResaleTickets] : [...enrichedResaleTickets],
-          );
+          Promise.all(resalePromises).then((resaleTickets) => {
+            const validResaleTickets = resaleTickets.filter((ticket) => ticket !== null);
+            setTickets((prevTickets) =>
+              prevTickets ? [...prevTickets, ...validResaleTickets] : [...validResaleTickets],
+            );
+          });
         } else {
           console.log("No resale listings found");
         }

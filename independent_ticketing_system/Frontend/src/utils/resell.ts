@@ -11,18 +11,24 @@ export const resellTicket = (
   client: IotaClient,
   navigate: NavigateFunction,
   setLoading: any,
+  senderAddress?: string,
 ) => {
   const tx = () => {
     const tx = new Transaction();
     tx.setGasBudget(50000000);
-    tx.moveCall({
+    // Call resale function which returns InitiateResale object
+    const [resaleObject] = tx.moveCall({
       target: `${packageId}::independent_ticketing_system_nft::resale`,
       arguments: [
         tx.object(formData.nft as string),
         tx.pure.u64(formData.price as string),
-        // No recipient needed - open marketplace model
       ],
     });
+    // Transfer the returned InitiateResale object to the sender
+    // This makes it discoverable and allows the seller to cancel it later
+    if (senderAddress) {
+      tx.transferObjects([resaleObject], senderAddress);
+    }
     return tx;
   };
   signAndExecuteTransaction(

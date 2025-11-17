@@ -66,6 +66,24 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         message: string::String,
     }
 
+    public struct EventCreated has copy, drop {
+        event_object_id: ID,
+        event_name: string::String,
+        event_id: string::String,
+        event_date: u64,
+        venue: string::String,
+        total_capacity: u64,
+        creator: address,
+    }
+
+    public struct ResaleInitiated has copy, drop {
+        resale_object_id: ID,
+        ticket_id: ID,
+        seller: address,
+        price: u64,
+        original_price: u64,
+    }
+
     /// Maximum resale price as percentage of original price (200 = 200% = 2x markup)
     const MAX_RESALE_PERCENTAGE: u64 = 200;
 
@@ -128,7 +146,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         };
 
         // Create and share the event object with all tickets
-        transfer::share_object(EventObject {
+        let event_object = EventObject {
             id: object::new(ctx),
             event_name,
             event_id,
@@ -137,7 +155,22 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             total_capacity: ticket_count,
             tickets_sold: 0,
             available_tickets_to_buy: tickets
+        };
+
+        let event_object_id = object::id(&event_object);
+
+        // Emit event for discoverability
+        event::emit(EventCreated {
+            event_object_id,
+            event_name,
+            event_id,
+            event_date,
+            venue,
+            total_capacity: ticket_count,
+            creator: sender,
         });
+
+        transfer::share_object(event_object);
     }
 
     public fun transfer_ticket(
@@ -172,6 +205,18 @@ module independent_ticketing_system::independent_ticketing_system_nft {
             price:updated_price,
             nft
         };
+
+        let resale_object_id = object::id(&initiate_resale);
+        let ticket_id = object::uid_to_inner(&initiate_resale.nft.id);
+
+        // Emit event for discoverability
+        event::emit(ResaleInitiated {
+            resale_object_id,
+            ticket_id,
+            seller: sender,
+            price: updated_price,
+            original_price,
+        });
 
         initiate_resale
     }
