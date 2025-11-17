@@ -4,7 +4,6 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
     use iota::coin;
     use iota::iota::IOTA;
     use iota::test_scenario::{Self, Scenario};
-    use iota::transfer;
     use independent_ticketing_system :: independent_ticketing_system_nft :: {
         EventObject,
         TicketNFT,
@@ -79,7 +78,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,BUYER1);
-        let initiated_resale = resale(ticket2,500,test_scenario::ctx(test));
+        let initiated_resale = resale(ticket2,400,test_scenario::ctx(test));
         transfer::public_transfer(initiated_resale, BUYER1);
 
         test_scenario::next_tx(test,BUYER1);
@@ -235,7 +234,7 @@ module independent_ticketing_system::independent_ticketing_system_nft_test {
         let ticket2 = test_scenario::take_from_sender<TicketNFT>(test);
 
         test_scenario::next_tx(test,BUYER1);
-        let initiated_resale = resale(ticket2,500,test_scenario::ctx(test));
+        let initiated_resale = resale(ticket2,400,test_scenario::ctx(test));
         transfer::public_transfer(initiated_resale, BUYER1);
 
         test_scenario::next_tx(test,BUYER1);
