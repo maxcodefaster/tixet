@@ -9,52 +9,151 @@ import { useSignAndExecuteTransaction } from "@iota/dapp-kit";
 export default function AvailableTickets() {
   const [tickets, setTickets] = useState<null | any[]>(null);
   const [buying, setBuying] = useState<number | null>(null);
-  const eventObject = useNetworkVariable(
-    "eventObject" as never
-  );
+  const [eventObjects, setEventObjects] = useState<string[]>([]);
   const packageId = useNetworkVariable("packageId" as never);
   const client = new IotaClient({
     url: getFullnodeUrl("testnet"),
   });
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+
+  // Effect to discover all EventObject instances
   useEffect(() => {
-    // Check if eventObject is properly configured
-    if (!eventObject || eventObject === "<YOUR_EVENTOBJECT_ADDRESS>") {
-      console.warn("Event object not configured in networkConfig.ts");
+    if (!packageId || packageId === "<YOUR_PACKAGE_ID>") {
+      console.warn("Package ID not configured in networkConfig.ts");
       setTickets([]);
       return;
     }
 
-    // Fetch event tickets using JSON-RPC
-    const body = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iota_getObject",
-      params: [eventObject, { showContent: true }],
-    };
-    fetch("https://indexer.devnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    console.log("Discovering all EventObject instances...");
+
+    // Use queryObjects from the SDK to find all EventObject instances
+    const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
+
+    client.queryObjects({
+      filter: {
+        StructType: structType
       },
-      body: JSON.stringify(body),
+      options: {
+        showContent: true,
+        showType: true
+      }
     })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.result?.data?.content?.fields?.available_tickets_to_buy) {
-          setTickets(res.result.data.content.fields.available_tickets_to_buy);
-        } else if (res.error) {
-          console.error("Error fetching event tickets:", res.error);
-          setTickets([]);
+      .then((response) => {
+        if (response.data && Array.isArray(response.data)) {
+          const eventIds = response.data
+            .map((obj: any) => obj.data?.objectId)
+            .filter((id: any) => id);
+          console.log(`✅ Found ${eventIds.length} events:`, eventIds);
+          setEventObjects(eventIds);
         } else {
-          console.warn("No tickets found in event object");
-          setTickets([]);
+          console.warn("⚠️ No events found in queryObjects response");
+          setEventObjects([]);
         }
       })
       .catch((error) => {
-        console.error("Error fetching event tickets:", error);
-        setTickets([]);
+        console.error("❌ Error discovering events with SDK:", error);
+        console.log("Trying JSON-RPC fallback...");
+
+        // Fallback to JSON-RPC if SDK method fails
+        const queryBody = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "iotax_queryObjects",
+          params: [{
+            filter: {
+              StructType: structType
+            },
+            options: {
+              showContent: true,
+              showType: true
+            }
+          }]
+        };
+
+        fetch("https://indexer.devnet.iota.cafe/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(queryBody),
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            if (res.result?.data && Array.isArray(res.result.data)) {
+              const eventIds = res.result.data
+                .map((obj: any) => obj.data?.objectId)
+                .filter((id: any) => id);
+              console.log(`✅ Found ${eventIds.length} events via RPC:`, eventIds);
+              setEventObjects(eventIds);
+            } else {
+              console.warn("⚠️ No events found, marketplace will be empty");
+              setEventObjects([]);
+            }
+          })
+          .catch((err) => {
+            console.error("❌ Both SDK and RPC failed:", err);
+            setEventObjects([]);
+          });
+      });
+  }, [packageId]);
+
+  // Effect to fetch tickets from all discovered events
+  useEffect(() => {
+    if (eventObjects.length === 0) {
+      setTickets([]);
+      return;
+    }
+
+    console.log(`Fetching tickets from ${eventObjects.length} events...`);
+
+    // Fetch tickets from all events
+    const fetchPromises = eventObjects.map((eventId) => {
+      const body = {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "iota_getObject",
+        params: [eventId, { showContent: true }],
+      };
+
+      return fetch("https://indexer.devnet.iota.cafe/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.result?.data?.content?.fields?.available_tickets_to_buy) {
+            const tickets = res.result.data.content.fields.available_tickets_to_buy;
+            const eventInfo = {
+              eventName: res.result.data.content.fields.event_name,
+              eventId: res.result.data.content.fields.event_id,
+              venue: res.result.data.content.fields.venue,
+              eventDate: res.result.data.content.fields.event_date,
+              eventObjectId: eventId
+            };
+            // Attach event info to each ticket
+            return tickets.map((ticket: any) => ({
+              ...ticket,
+              eventInfo
+            }));
+          }
+          return [];
+        })
+        .catch((error) => {
+          console.error(`Error fetching tickets from event ${eventId}:`, error);
+          return [];
+        });
+    });
+
+    Promise.all(fetchPromises)
+      .then((results) => {
+        // Flatten all tickets from all events
+        const allTickets = results.flat();
+        console.log(`Found ${allTickets.length} total tickets across all events`);
+        setTickets(allTickets);
       });
 
     // Fetch resale tickets owned by the user
@@ -79,9 +178,9 @@ export default function AvailableTickets() {
           console.error("Error fetching resale tickets:", error);
         });
     }
-  }, [eventObject, packageId, address?.address]);
+  }, [eventObjects, packageId, address?.address]);
 
-  const handleBuyTicket = async (seatNumber: number, price: string) => {
+  const handleBuyTicket = async (seatNumber: number, price: string, eventObjectId: string) => {
     if (!address?.address) {
       alert("Please connect your wallet first!");
       return;
@@ -112,7 +211,7 @@ export default function AvailableTickets() {
         arguments: [
           tx.object(coin.coinObjectId),
           tx.pure.u64(seatNumber),
-          tx.object(eventObject),
+          tx.object(eventObjectId),
         ],
       });
 
@@ -217,6 +316,7 @@ export default function AvailableTickets() {
           const fields = isResale ? ticket.data.content.fields.nft.fields : (ticket.fields || ticket);
           const resalePrice = isResale ? ticket.data.content.fields.price : fields.price;
           const resaleObjectId = isResale ? ticket.data.objectId : null;
+          const eventInfo = ticket.eventInfo; // Event info attached to regular tickets
 
           return (
             <Box width="500px" key={index}>
@@ -227,18 +327,32 @@ export default function AvailableTickets() {
                       🔄 RESALE TICKET
                     </Text>
                   )}
+                  {eventInfo && (
+                    <Text size={"4"} weight="bold" style={{ color: "#ccff00" }}>
+                      🎪 {eventInfo.eventName}
+                    </Text>
+                  )}
                   <Text size={"5"}>{fields.name}</Text>
+                  {eventInfo && (
+                    <>
+                      <Text size={"2"} style={{ color: "#aaa" }}>
+                        📍 {eventInfo.venue}
+                      </Text>
+                      <Text size={"2"} style={{ color: "#aaa" }}>
+                        📅 Event Date: {eventInfo.eventDate}
+                      </Text>
+                    </>
+                  )}
                   <Text size={"3"}>Seat: {fields.seat_number}</Text>
                   <Text size={"2"}>Owner: {fields.owner}</Text>
                   <Text size={"2"}>Event ID: {fields.event_id}</Text>
-                  <Text size={"2"}>Date: {fields.event_date}</Text>
                   <Text size={"2"} weight="bold" style={{ color: "#0ff" }}>
                     Price: {resalePrice} IOTA
                   </Text>
                   <Button
                     onClick={() => isResale
                       ? handleBuyResale(resaleObjectId!, fields.seat_number)
-                      : handleBuyTicket(fields.seat_number, fields.price)
+                      : handleBuyTicket(fields.seat_number, fields.price, eventInfo?.eventObjectId)
                     }
                     disabled={buying === fields.seat_number}
                     style={{
