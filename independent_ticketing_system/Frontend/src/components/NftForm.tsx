@@ -16,6 +16,7 @@ const NftForm = ({ openForm, nft }: { openForm: OpenFormState["openForm"],nft:st
     nftFormData,
     updateNftFormData,
     resetNftFormData,
+    address,
   } = useCreateForm();
   const [loading,setLoading] = useState<boolean>(false);
   const [originalPrice, setOriginalPrice] = useState<number | null>(null);
@@ -146,7 +147,8 @@ const NftForm = ({ openForm, nft }: { openForm: OpenFormState["openForm"],nft:st
                 signAndExecuteTransaction,
                 client,
                 navigate,
-                setLoading
+                setLoading,
+                address?.address
               )
             }}
             title={"Submit"}
