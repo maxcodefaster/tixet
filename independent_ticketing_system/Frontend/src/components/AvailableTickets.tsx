@@ -156,29 +156,32 @@ export default function AvailableTickets() {
         setTickets(allTickets);
       });
 
-    // Fetch resale tickets owned by the user
-    if (address?.address) {
-      client
-        .getOwnedObjects({
-          owner: address.address,
-          filter: {
-            StructType: `${packageId}::independent_ticketing_system_nft::InitiateResale`,
-          },
-          options: {
-            showContent: true,
-          },
-        })
-        .then((res) => res.data)
-        .then((res) =>
+    // Fetch all resale tickets from the open marketplace
+    const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
+
+    client.queryObjects({
+      filter: {
+        StructType: resaleStructType
+      },
+      options: {
+        showContent: true,
+        showType: true
+      }
+    })
+      .then((response) => {
+        if (response.data && Array.isArray(response.data)) {
+          console.log(`✅ Found ${response.data.length} resale listings`);
           setTickets((prevTickets) =>
-            prevTickets ? [...prevTickets, ...res] : [...res],
-          ),
-        )
-        .catch((error) => {
-          console.error("Error fetching resale tickets:", error);
-        });
-    }
-  }, [eventObjects, packageId, address?.address]);
+            prevTickets ? [...prevTickets, ...response.data] : [...response.data],
+          );
+        } else {
+          console.log("No resale listings found");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching resale tickets:", error);
+      });
+  }, [eventObjects, packageId]);
 
   const handleBuyTicket = async (seatNumber: number, price: string, eventObjectId: string) => {
     if (!address?.address) {

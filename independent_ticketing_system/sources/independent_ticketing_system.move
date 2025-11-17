@@ -66,6 +66,9 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         message: string::String,
     }
 
+    /// Maximum resale price as percentage of original price (200 = 200% = 2x markup)
+    const MAX_RESALE_PERCENTAGE: u64 = 200;
+
     #[error]
     const NOT_ENOUGH_FUNDS: vector<u8> = b"Insufficient funds for gas and NFT transfer";
     #[error]
@@ -78,6 +81,8 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     const TICKET_ALREADY_REDEEMED: vector<u8> = b"This ticket has already been redeemed";
     #[error]
     const INVALID_TICKET_COUNT: vector<u8> = b"Ticket count must be greater than zero";
+    #[error]
+    const RESALE_PRICE_TOO_HIGH: vector<u8> = b"Resale price exceeds maximum allowed markup";
 
     fun init(ctx: &mut TxContext) {
         transfer::share_object(RedemptionRegistry {
@@ -144,26 +149,32 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         transfer::public_transfer(nft, recipient);
     }
 
-    #[allow(unused_variable)]
+    /// List ticket for resale on open marketplace with price cap enforcement
+    /// Price cannot exceed MAX_RESALE_PERCENTAGE (200%) of original ticket price
     public fun resale(
-        mut nft: TicketNFT,
+        nft: TicketNFT,
         updated_price:u64,
-        recipient:address,
         ctx: &mut TxContext
     ) {
-
         let sender = tx_context::sender(ctx);
+        let original_price = nft.price;
 
-        nft.price = updated_price;
+        // Enforce price cap: resale price cannot exceed MAX_RESALE_PERCENTAGE of original
+        let max_allowed_price = (original_price * MAX_RESALE_PERCENTAGE) / 100;
+        assert!(updated_price <= max_allowed_price, RESALE_PRICE_TOO_HIGH);
 
+        // Create resale listing - transferred to seller for open marketplace
+        // Anyone can query all InitiateResale objects to see listings
         let initiate_resale = InitiateResale {
             id: object::new(ctx),
             seller:sender,
-            buyer:recipient,
+            buyer:sender,  // Set to seller, but buy_resale ignores this field
             price:updated_price,
             nft
         };
-        transfer::public_transfer(initiate_resale,recipient);
+
+        // Transfer to seller so they own the listing (open marketplace model)
+        transfer::public_transfer(initiate_resale, sender);
     }
 
     #[allow(lint(self_transfer))]

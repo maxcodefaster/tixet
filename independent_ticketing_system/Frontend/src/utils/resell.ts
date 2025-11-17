@@ -20,7 +20,7 @@ export const resellTicket = (
       arguments: [
         tx.object(formData.nft as string),
         tx.pure.u64(formData.price as string),
-        tx.pure.address(formData.recipient as string),
+        // No recipient needed - open marketplace model
       ],
     });
     return tx;

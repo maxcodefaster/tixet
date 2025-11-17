@@ -34,7 +34,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
     },
     Resell: {
       title: 'Resell Ticket',
-      subtitle: 'Offer your ticket to a specific buyer',
+      subtitle: 'List your ticket on the open marketplace (max 200% of original price)',
       icon: '💰'
     },
     Burn: {
@@ -435,7 +435,7 @@ const InputForm = ({ openForm }: { openForm: OpenFormState["openForm"] }) => {
           </Form.Field>
         )}
 
-        {(openForm === "Transfer" || openForm === "Resell") && (
+        {openForm === "Transfer" && (
           <Form.Field name="" style={styles.formField}>
             <Form.Label style={styles.formLabel}>Recipient</Form.Label>
             <Form.Control asChild>
