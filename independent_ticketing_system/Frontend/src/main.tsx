@@ -22,6 +22,7 @@ import TransferTickets from "./components/TransferTickets.tsx";
 import BurnTickets from "./components/BurnTickets.tsx";
 import ViewQR from "./components/ViewQR.tsx";
 import ScanQR from "./components/ScanQR.tsx";
+import CancelResale from "./components/CancelResale.tsx";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: "/scanQR",
         element: <ScanQR />,
+      },
+      {
+        path: "/ownedTickets/cancelResale/:initiatedResale",
+        element: <CancelResale />,
       },
     ],
   },
