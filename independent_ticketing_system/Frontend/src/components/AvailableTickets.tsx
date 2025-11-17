@@ -16,6 +16,9 @@ export default function AvailableTickets() {
   const client = new IotaClient({
     url: getFullnodeUrl("devnet"),
   });
+  const indexerClient = new IotaClient({
+    url: "https://api.devnet.iota.cafe:443",
+  });
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
@@ -39,36 +42,21 @@ export default function AvailableTickets() {
 
     console.log("Discovering all EventObject instances...");
 
-    // Query all EventObject instances using indexer RPC
-    // Note: Full nodes don't support iotax_queryObjects, must use indexer
+    // Query all EventObject instances using indexer
     const structType = `${packageId}::independent_ticketing_system_nft::EventObject`;
 
-    const queryBody = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iotax_queryObjects",
-      params: [{
-        filter: {
-          StructType: structType
-        },
-        options: {
-          showContent: true,
-          showType: true
-        }
-      }]
-    };
-
-    fetch("https://indexer.devnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    indexerClient.queryObjects({
+      filter: {
+        StructType: structType
       },
-      body: JSON.stringify(queryBody),
+      options: {
+        showContent: true,
+        showType: true
+      }
     })
-      .then((res) => res.json())
       .then((res) => {
-        if (res.result?.data && Array.isArray(res.result.data)) {
-          const eventIds = res.result.data
+        if (res.data && Array.isArray(res.data)) {
+          const eventIds = res.data
             .map((obj: any) => obj.data?.objectId)
             .filter((id: any) => id);
           console.log(`✅ Found ${eventIds.length} events:`, eventIds);
@@ -95,29 +83,18 @@ export default function AvailableTickets() {
 
     // Fetch tickets from all events
     const fetchPromises = eventObjects.map((eventId) => {
-      const body = {
-        jsonrpc: "2.0",
-        id: 1,
-        method: "iota_getObject",
-        params: [eventId, { showContent: true }],
-      };
-
-      return fetch("https://indexer.devnet.iota.cafe/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+      return client.getObject({
+        id: eventId,
+        options: { showContent: true }
       })
-        .then((res) => res.json())
         .then((res) => {
-          if (res.result?.data?.content?.fields?.available_tickets_to_buy) {
-            const tickets = res.result.data.content.fields.available_tickets_to_buy;
+          if (res.data?.content?.dataType === 'moveObject' && res.data.content.fields?.available_tickets_to_buy) {
+            const tickets = res.data.content.fields.available_tickets_to_buy;
             const eventInfo = {
-              eventName: res.result.data.content.fields.event_name,
-              eventId: res.result.data.content.fields.event_id,
-              venue: res.result.data.content.fields.venue,
-              eventDate: res.result.data.content.fields.event_date,
+              eventName: res.data.content.fields.event_name,
+              eventId: res.data.content.fields.event_id,
+              venue: res.data.content.fields.venue,
+              eventDate: res.data.content.fields.event_date,
               eventObjectId: eventId
             };
             // Attach event info to each ticket
@@ -163,35 +140,21 @@ export default function AvailableTickets() {
 
     const resaleStructType = `${packageId}::independent_ticketing_system_nft::InitiateResale`;
 
-    const resaleQueryBody = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "iotax_queryObjects",
-      params: [{
-        filter: {
-          StructType: resaleStructType
-        },
-        options: {
-          showContent: true,
-          showType: true
-        }
-      }]
-    };
-
-    fetch("https://indexer.devnet.iota.cafe/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    indexerClient.queryObjects({
+      filter: {
+        StructType: resaleStructType
       },
-      body: JSON.stringify(resaleQueryBody),
+      options: {
+        showContent: true,
+        showType: true
+      }
     })
-      .then((res) => res.json())
       .then((res) => {
-        if (res.result?.data && Array.isArray(res.result.data)) {
-          console.log(`✅ Found ${res.result.data.length} resale listings`);
+        if (res.data && Array.isArray(res.data)) {
+          console.log(`✅ Found ${res.data.length} resale listings`);
 
           // Enrich resale tickets with event metadata
-          const enrichedResaleTickets = res.result.data.map((resaleTicket: any) => {
+          const enrichedResaleTickets = res.data.map((resaleTicket: any) => {
             const eventId = resaleTicket.data?.content?.fields?.nft?.fields?.event_id;
             if (eventId && eventMetadataMap.has(eventId)) {
               return {
