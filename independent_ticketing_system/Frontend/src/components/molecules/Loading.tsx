@@ -14,7 +14,7 @@ export default function Loading() {
         stroke-width="10"
         fill="none"
         stroke-dasharray="283"
-        stroke-dashoffset="75"
+        strokeDashoffset="75"
       >
         <animateTransform
           attributeName="transform"

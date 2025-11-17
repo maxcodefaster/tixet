@@ -19,6 +19,20 @@ export default function AvailableTickets() {
   const { address } = useCreateForm();
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
+  // Function to format date from "DDMMYYYY" to readable format
+  const formatDate = (dateStr: string) => {
+    if (!dateStr || dateStr.length !== 8) return dateStr;
+    const day = dateStr.substring(0, 2);
+    const month = dateStr.substring(2, 4);
+    const year = dateStr.substring(4, 8);
+    const date = new Date(`${year}-${month}-${day}`);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   // Function to refetch all tickets
   const refetchTickets = () => {
     setLoading(true);
@@ -48,10 +62,10 @@ export default function AvailableTickets() {
       limit: 50
     })
       .then((res) => {
+        console.log(res)
         if (res.data && Array.isArray(res.data)) {
-          // Extract event object IDs from EventCreated events
           const eventIds = res.data
-            .map((event: any) => event.parsedJson?.event_object_id)
+            .map((obj: any) => obj.parsedJson?.event_object_id)
             .filter((id: any) => id);
           console.log(`✅ Found ${eventIds.length} events from creation events:`, eventIds);
           setEventObjects(eventIds);
@@ -83,13 +97,15 @@ export default function AvailableTickets() {
         options: { showContent: true }
       })
         .then((res) => {
-          if (res.data?.content?.dataType === 'moveObject' && res.data.content.fields?.available_tickets_to_buy) {
-            const tickets = res.data.content.fields.available_tickets_to_buy;
+          console.log(res)
+          const content = res.data?.content as any;
+          if (content?.fields?.available_tickets_to_buy) {
+            const tickets = content.fields.available_tickets_to_buy;
             const eventInfo = {
-              eventName: res.data.content.fields.event_name,
-              eventId: res.data.content.fields.event_id,
-              venue: res.data.content.fields.venue,
-              eventDate: res.data.content.fields.event_date,
+              eventName: content.fields.event_name,
+              eventId: content.fields.event_id,
+              venue: content.fields.venue,
+              eventDate: content.fields.event_date,
               eventObjectId: eventId
             };
             // Attach event info to each ticket
@@ -115,7 +131,7 @@ export default function AvailableTickets() {
 
         // Build event metadata map for resale ticket enrichment
         const metadataMap = new Map();
-        results.forEach(ticketsFromEvent => {
+        results.forEach((ticketsFromEvent: any) => {
           if (ticketsFromEvent.length > 0 && ticketsFromEvent[0].eventInfo) {
             const eventInfo = ticketsFromEvent[0].eventInfo;
             metadataMap.set(eventInfo.eventId, eventInfo);
@@ -141,8 +157,9 @@ export default function AvailableTickets() {
       limit: 50
     })
       .then((res) => {
+        console.log(res)
         if (res.data && Array.isArray(res.data)) {
-          console.log(`✅ Found ${res.data.length} resale listings from events`);
+          console.log(`✅ Found ${res.data.length} resale listings`);
 
           // Fetch full resale object data for each resale listing
           const resalePromises = res.data.map((event: any) => {
@@ -154,8 +171,9 @@ export default function AvailableTickets() {
               options: { showContent: true }
             })
               .then((resaleObj) => {
-                if (resaleObj.data?.content?.dataType === 'moveObject') {
-                  const fields = resaleObj.data.content.fields;
+                const content = resaleObj.data?.content as any;
+                if (content?.dataType === 'moveObject') {
+                  const fields = content.fields;
                   const nftFields = fields?.nft?.fields;
                   const eventId = nftFields?.event_id;
 
@@ -318,80 +336,88 @@ export default function AvailableTickets() {
   };
 
   return (
-    <Flex mt={"5"} justify={"center"}>
+    <Box mt={"5"}>
       {loading ? (
         <Flex justify={"center"} mt={"5"}>
           <Heading align={"center"}>Loading marketplace...</Heading>
         </Flex>
       ) : tickets && tickets.length > 0 ? (
-        tickets.map((ticket, index) => {
-          // Detect if this is a resale ticket (has data.content structure from getOwnedObjects)
-          const isResale = ticket.data?.content?.fields?.nft;
-          const fields = isResale ? ticket.data.content.fields.nft.fields : (ticket.fields || ticket);
-          const resalePrice = isResale ? ticket.data.content.fields.price : fields.price;
-          const resaleObjectId = isResale ? ticket.data.objectId : null;
-          const eventInfo = ticket.eventInfo; // Event info attached to regular tickets
+        <Flex 
+          direction="row" 
+          wrap="wrap" 
+          gap="4" 
+          justify="center"
+          style={{ maxWidth: "1400px", margin: "0 auto" }}
+        >
+          {tickets.map((ticket, index) => {
+            // Detect if this is a resale ticket (has data.content structure from getOwnedObjects)
+            const isResale = ticket.data?.content?.fields?.nft;
+            const fields = isResale ? ticket.data.content.fields.nft.fields : (ticket.fields || ticket);
+            const resalePrice = isResale ? ticket.data.content.fields.price : fields.price;
+            const resaleObjectId = isResale ? ticket.data.objectId : null;
+            const eventInfo = ticket.eventInfo; // Event info attached to regular tickets
 
-          return (
-            <Box width="500px" key={index}>
-              <Card size="3" style={{ background: "#1e1e1e" }}>
-                <Flex direction={"column"} gap="3">
-                  {isResale && (
-                    <Text size={"2"} weight="bold" style={{ color: "#ff006e" }}>
-                      🔄 RESALE TICKET
-                    </Text>
-                  )}
-                  {eventInfo && (
-                    <Text size={"4"} weight="bold" style={{ color: "#ccff00" }}>
-                      🎪 {eventInfo.eventName}
-                    </Text>
-                  )}
-                  <Text size={"5"}>{fields.name}</Text>
-                  {eventInfo && (
-                    <>
-                      <Text size={"2"} style={{ color: "#aaa" }}>
-                        📍 {eventInfo.venue}
+            return (
+              <Box width="400px" key={index}>
+                <Card size="3" style={{ background: "#1e1e1e", height: "100%" }}>
+                  <Flex direction={"column"} gap="3">
+                    {isResale && (
+                      <Text size={"2"} weight="bold" style={{ color: "#ff006e" }}>
+                        🔄 RESALE TICKET
                       </Text>
-                      <Text size={"2"} style={{ color: "#aaa" }}>
-                        📅 Event Date: {eventInfo.eventDate}
+                    )}
+                    {eventInfo && (
+                      <Text size={"4"} weight="bold" style={{ color: "#ccff00" }}>
+                        🎪 {eventInfo.eventName}
                       </Text>
-                    </>
-                  )}
-                  <Text size={"3"}>Seat: {fields.seat_number}</Text>
-                  <Text size={"2"}>Owner: {fields.owner}</Text>
-                  <Text size={"2"}>Event ID: {fields.event_id}</Text>
-                  <Text size={"2"} weight="bold" style={{ color: "#0ff" }}>
-                    Price: {resalePrice} IOTA
-                  </Text>
-                  <Button
-                    onClick={() => isResale
-                      ? handleBuyResale(resaleObjectId!, fields.seat_number)
-                      : handleBuyTicket(fields.seat_number, eventInfo?.eventObjectId)
-                    }
-                    disabled={buying === fields.seat_number}
-                    style={{
-                      background: buying === fields.seat_number ? "#666" : isResale ? "#ff006e" : "#0101ff",
-                      cursor: buying === fields.seat_number ? "wait" : "pointer",
-                      padding: "0.75rem",
-                      borderRadius: "6px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {buying === fields.seat_number
-                      ? "Buying..."
-                      : `Buy ${isResale ? 'Resale ' : ''}Ticket - ${resalePrice} IOTA`
-                    }
-                  </Button>
-                </Flex>
-              </Card>
-            </Box>
-          );
-        })
+                    )}
+                    <Text size={"5"}>{fields.name}</Text>
+                    {eventInfo && (
+                      <>
+                        <Text size={"2"} style={{ color: "#aaa" }}>
+                          📍 {eventInfo.venue}
+                        </Text>
+                        <Text size={"2"} style={{ color: "#aaa" }}>
+                          📅 {formatDate(eventInfo.eventDate)}
+                        </Text>
+                      </>
+                    )}
+                    <Text size={"3"}>Seat: {fields.seat_number}</Text>
+                    <Text size={"2"}>Owner: {fields.owner}</Text>
+                    <Text size={"2"}>Event ID: {fields.event_id}</Text>
+                    <Text size={"2"} weight="bold" style={{ color: "#0ff" }}>
+                      Price: {resalePrice} IOTA
+                    </Text>
+                    <Button
+                      onClick={() => isResale
+                        ? handleBuyResale(resaleObjectId!, fields.seat_number)
+                        : handleBuyTicket(fields.seat_number, eventInfo?.eventObjectId)
+                      }
+                      disabled={buying === fields.seat_number}
+                      style={{
+                        background: buying === fields.seat_number ? "#666" : isResale ? "#ff006e" : "#0101ff",
+                        cursor: buying === fields.seat_number ? "wait" : "pointer",
+                        padding: "0.75rem",
+                        borderRadius: "6px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {buying === fields.seat_number
+                        ? "Buying..."
+                        : `Buy ${isResale ? 'Resale ' : ''}Ticket - ${resalePrice} IOTA`
+                      }
+                    </Button>
+                  </Flex>
+                </Card>
+              </Box>
+            );
+          })}
+        </Flex>
       ) : (
         <Flex justify={"center"} mt={"5"}>
           <Heading align={"center"}>No Tickets Available Now!</Heading>
         </Flex>
       )}
-    </Flex>
+    </Box>
   );
 }
