@@ -31,7 +31,7 @@ tixet/
 
 - [IOTA CLI](https://docs.iota.org/developer/getting-started/install-iota) installed
 - [Node.js](https://nodejs.org/) v16+ and npm
-- IOTA wallet (for testnet interaction)
+- IOTA wallet (for devnet interaction)
 
 ## Quick Start
 
@@ -44,12 +44,12 @@ iota client
 ```
 
 When prompted:
-- Select network: `devnet` (or `testnet` for testnet)
+- Select network: `devnet`
 - Select key scheme: `0` (for ed25519)
 
 This will generate a new wallet address and save your secret recovery phrase.
 
-**Get Devnet/Testnet Tokens**
+**Get Devnet Tokens**
 
 Request test tokens from the faucet using your wallet address:
 
@@ -85,7 +85,7 @@ Run tests to verify everything works:
 iota move test
 ```
 
-Publish to IOTA testnet:
+Publish to IOTA devnet:
 
 ```bash
 iota client publish --gas-budget 100000000
@@ -107,8 +107,8 @@ cd Frontend
 Open `src/networkConfig.ts` and replace the placeholders:
 
 ```typescript
-testnet: {
-  url: getFullnodeUrl("testnet"),
+devnet: {
+  url: getFullnodeUrl("devnet"),
   variables: {
     packageId: "YOUR_PACKAGE_ID_HERE",
     eventObject: "YOUR_EVENTOBJECT_ADDRESS_HERE",

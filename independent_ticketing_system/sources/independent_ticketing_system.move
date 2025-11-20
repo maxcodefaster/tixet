@@ -4,6 +4,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
     use iota::iota::IOTA;
     use iota::event;
     use iota::table::{Self, Table};
+    use iota::dynamic_field;
 
     public struct TicketNFT has key, store {
         id: UID,
@@ -33,7 +34,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         venue: string::String,
         total_capacity: u64,
         tickets_sold: u64,
-        available_tickets_to_buy: vector<TicketNFT>
+        available_seat_numbers: vector<u64>  // Stores only seat numbers; actual tickets stored as dynamic fields
     }
 
     public struct RedemptionRegistry has key {
@@ -124,10 +125,22 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         assert!(ticket_count > 0, INVALID_TICKET_COUNT);
         assert!(royalty_percentage >= 0 && royalty_percentage <= 100, INVALID_ROYALTY);
 
-        let mut tickets = vector::empty<TicketNFT>();
+        let mut seat_numbers = vector::empty<u64>();
         let ticket_name = string::utf8(b"Event Ticket NFT");
 
-        // Create all tickets for this event
+        // Create the event object first
+        let mut event_object = EventObject {
+            id: object::new(ctx),
+            event_name,
+            event_id,
+            event_date,
+            venue,
+            total_capacity: ticket_count,
+            tickets_sold: 0,
+            available_seat_numbers: seat_numbers
+        };
+
+        // Create all tickets and store them as dynamic fields
         let mut i = 1;
         while (i <= ticket_count) {
             let ticket = TicketNFT {
@@ -141,20 +154,14 @@ module independent_ticketing_system::independent_ticketing_system_nft {
                 royalty_percentage,
                 price: ticket_price
             };
-            vector::push_back(&mut tickets, ticket);
-            i = i + 1;
-        };
 
-        // Create and share the event object with all tickets
-        let event_object = EventObject {
-            id: object::new(ctx),
-            event_name,
-            event_id,
-            event_date,
-            venue,
-            total_capacity: ticket_count,
-            tickets_sold: 0,
-            available_tickets_to_buy: tickets
+            // Store ticket as dynamic field keyed by seat number
+            dynamic_field::add(&mut event_object.id, i, ticket);
+
+            // Track available seat number
+            vector::push_back(&mut event_object.available_seat_numbers, i);
+
+            i = i + 1;
         };
 
         let event_object_id = object::id(&event_object);
@@ -250,40 +257,52 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         ctx: &mut TxContext
     ) {
         let sender = tx_context::sender(ctx);
+
+        // Find and remove seat number from available list (O(N) on u64, much cheaper than full NFT)
         let mut i = 0;
-        let length = vector::length(&event_object.available_tickets_to_buy);
+        let length = vector::length(&event_object.available_seat_numbers);
+        let mut found = false;
 
         while (i < length) {
-            let current_nft = vector::borrow(&event_object.available_tickets_to_buy, i);
-            if (&current_nft.seat_number == seat_number) {
-                let mut deleted_nft = vector::remove(&mut event_object.available_tickets_to_buy, i);
-
-                // Transfer the payment coin directly to the creator
-                transfer::public_transfer(payment_coin, deleted_nft.creator);
-
-                // Update ownership and transfer NFT
-                deleted_nft.owner = sender;
-
-                // Update tickets_sold counter
-                event_object.tickets_sold = event_object.tickets_sold + 1;
-
-                event::emit(TicketBoughtSuccessfully {
-                    name: deleted_nft.name,
-                    seat_number: deleted_nft.seat_number,
-                    owner: deleted_nft.owner,
-                    event_date: deleted_nft.event_date,
-                    message: string::utf8(b"NFT bought successfully"),
-                });
-
-                transfer::public_transfer(deleted_nft, sender);
-                return
+            let current_seat = vector::borrow(&event_object.available_seat_numbers, i);
+            if (current_seat == &seat_number) {
+                vector::remove(&mut event_object.available_seat_numbers, i);
+                found = true;
+                break
             };
             i = i + 1;
         };
-        
-        // If ticket wasn't found, return payment and abort
-        transfer::public_transfer(payment_coin, sender);
-        abort INVALID_TICKET_TO_BUY
+
+        // If seat number not found, return payment and abort
+        if (!found) {
+            transfer::public_transfer(payment_coin, sender);
+            abort INVALID_TICKET_TO_BUY
+        };
+
+        // Retrieve ticket from dynamic field (O(1) operation)
+        let mut ticket = dynamic_field::remove<u64, TicketNFT>(&mut event_object.id, seat_number);
+
+        // Verify payment amount matches ticket price
+        assert!(coin::value(&payment_coin) == ticket.price, NOT_ENOUGH_FUNDS);
+
+        // Transfer the payment coin directly to the creator
+        transfer::public_transfer(payment_coin, ticket.creator);
+
+        // Update ownership and transfer NFT
+        ticket.owner = sender;
+
+        // Update tickets_sold counter
+        event_object.tickets_sold = event_object.tickets_sold + 1;
+
+        event::emit(TicketBoughtSuccessfully {
+            name: ticket.name,
+            seat_number: ticket.seat_number,
+            owner: ticket.owner,
+            event_date: ticket.event_date,
+            message: string::utf8(b"NFT bought successfully"),
+        });
+
+        transfer::public_transfer(ticket, sender);
     }
 
     /// Buy a resale ticket
@@ -306,7 +325,11 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         // Calculate royalty on the resale price
         let royalty_percentage = nft1.royalty_percentage;
         let royalty_amount = (price1 * royalty_percentage) / 100;
-        
+        let total_required = price1 + royalty_amount;
+
+        // Verify payment amount matches resale price + royalty
+        assert!(coin::value(&payment_coin) == total_required, NOT_ENOUGH_FUNDS);
+
         // Split the payment coin for royalty and seller payment
         let royalty_coin = payment_coin.split(royalty_amount, ctx);
         
