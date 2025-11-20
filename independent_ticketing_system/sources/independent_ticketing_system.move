@@ -256,6 +256,9 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         while (i < length) {
             let current_nft = vector::borrow(&event_object.available_tickets_to_buy, i);
             if (&current_nft.seat_number == seat_number) {
+                // Verify payment amount matches ticket price
+                assert!(coin::value(&payment_coin) == current_nft.price, NOT_ENOUGH_FUNDS);
+
                 let mut deleted_nft = vector::remove(&mut event_object.available_tickets_to_buy, i);
 
                 // Transfer the payment coin directly to the creator
@@ -306,7 +309,11 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         // Calculate royalty on the resale price
         let royalty_percentage = nft1.royalty_percentage;
         let royalty_amount = (price1 * royalty_percentage) / 100;
-        
+        let total_required = price1 + royalty_amount;
+
+        // Verify payment amount matches resale price + royalty
+        assert!(coin::value(&payment_coin) == total_required, NOT_ENOUGH_FUNDS);
+
         // Split the payment coin for royalty and seller payment
         let royalty_coin = payment_coin.split(royalty_amount, ctx);
         
