@@ -45,7 +45,7 @@ function App() {
                 boxShadow: '3px 3px 0px rgba(0,0,0,0.2)',
                 whiteSpace: 'nowrap'
               }}>
-                TIXΞT
+                KlarPass
               </div>
             </Link>
 

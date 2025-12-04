@@ -1,4 +1,4 @@
-# TIXΞT - Decentralized Event Ticketing
+# KlarPass - Decentralized Event Ticketing
 
 A blockchain-based ticketing platform built on IOTA that eliminates middlemen and puts control back in the hands of event creators and attendees.
 
@@ -13,7 +13,7 @@ A blockchain-based ticketing platform built on IOTA that eliminates middlemen an
 ## Project Structure
 
 ```
-tixet/
+klarpass/
 ├── independent_ticketing_system/          # Move smart contracts
 │   ├── sources/
 │   │   └── independent_ticketing_system.move

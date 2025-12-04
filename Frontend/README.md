@@ -1,6 +1,6 @@
-# TIXΞT Frontend
+# KlarPass Frontend
 
-React-based dApp for the TIXΞT decentralized ticketing platform with cyberpunk-inspired design.
+React-based dApp for the KlarPass decentralized ticketing platform with cyberpunk-inspired design.
 
 ## Stack
 
@@ -17,7 +17,7 @@ React-based dApp for the TIXΞT decentralized ticketing platform with cyberpunk-
 
 - Node.js v16 or higher
 - npm or pnpm
-- Deployed TIXΞT smart contract on IOTA testnet
+- Deployed KlarPass smart contract on IOTA testnet
 
 ## Setup
 

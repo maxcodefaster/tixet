@@ -1,5 +1,6 @@
 import { useCreateForm } from "../hooks/useCreateForm";
 import OwnedObjects from "./OwnedTickets";
+import AvailableTickets from "./AvailableTickets";
 import { Link } from "react-router-dom";
 
 // The Wave - Purely Visual Delight
@@ -30,62 +31,82 @@ function WaveDivider() {
 export default function Home() {
   const { address } = useCreateForm();
 
-  // 1. LANDING PAGE STATE (Not Connected)
+  // 1. LANDING PAGE STATE (Not Connected) - Show Marketplace
   if (!address) {
     return (
-      <div className="fade-in-up" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '70vh',
-        textAlign: 'center',
-        gap: '3rem',
-      }}>
-        <div>
-          <h1 style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(3rem, 8vw, 6rem)',
-            color: 'var(--ink-black)',
-            margin: 0,
-            letterSpacing: '-0.03em',
-            fontWeight: 900,
-            lineHeight: 0.9,
-            textShadow: '4px 4px 0px var(--soft-gray)'
+      <div className="fade-in-up">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '30vh',
+          textAlign: 'center',
+          gap: '2rem',
+          marginBottom: '2rem',
+        }}>
+          <div>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(3rem, 8vw, 6rem)',
+              color: 'var(--ink-black)',
+              margin: 0,
+              letterSpacing: '-0.03em',
+              fontWeight: 900,
+              lineHeight: 0.9,
+              textShadow: '4px 4px 0px var(--soft-gray)'
+            }}>
+              KlarPass
+            </h1>
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.5rem',
+              color: 'var(--stamp-blue)',
+              fontWeight: 700,
+              marginTop: '1rem',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase'
+            }}>
+              The Future of Event Ticketing
+            </p>
+          </div>
+
+          <div style={{
+            padding: '1.5rem 2.5rem',
+            background: 'var(--paper-white)',
+            border: '3px solid var(--ink-black)',
+            borderRadius: '16px',
+            boxShadow: 'var(--paper-shadow)',
+            transform: 'rotate(-1deg)',
+            maxWidth: '500px',
           }}>
-            TIXΞT
-          </h1>
-          <p style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '1.5rem',
-            color: 'var(--stamp-blue)',
-            fontWeight: 700,
-            marginTop: '1rem',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase'
-          }}>
-            The Future of Event Ticketing
-          </p>
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              color: 'var(--ink-black)',
+              fontSize: '1rem',
+              margin: 0,
+              lineHeight: 1.6,
+            }}>
+              Connect your wallet to buy tickets, manage your collection, or create new events.
+            </p>
+          </div>
         </div>
 
-        <div style={{
-          padding: '2rem 3rem',
-          background: 'var(--paper-white)',
-          border: '3px solid var(--ink-black)',
-          borderRadius: '16px',
-          boxShadow: 'var(--paper-shadow)',
-          transform: 'rotate(-1deg)',
-          maxWidth: '500px',
-        }}>
-          <p style={{
-            fontFamily: 'var(--font-body)',
+        <WaveDivider />
+
+        {/* Show Marketplace Tickets */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '2.5rem',
             color: 'var(--ink-black)',
-            fontSize: '1.1rem',
-            margin: 0,
-            lineHeight: 1.6,
+            margin: '0 0 1rem 0',
+            textAlign: 'center',
+            letterSpacing: '-0.02em',
           }}>
-            Connect your wallet to view your tickets, manage listings, or create new events.
-          </p>
+            MARKETPLACE
+          </h2>
+          <AvailableTickets />
         </div>
       </div>
     );
