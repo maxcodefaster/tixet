@@ -81,57 +81,83 @@ export default function AvailableTickets() {
   }, [packageId]);
 
   // Effect to fetch tickets from all events
-  useEffect(() => {
-    if (eventObjects.length === 0) {
-      setTickets([]);
-      return;
-    }
+  // Updated Effect to fetch tickets from dynamic fields
+useEffect(() => {
+  if (eventObjects.length === 0) {
+    setTickets([]);
+    setLoading(false);
+    return;
+  }
 
-    const fetchPromises = eventObjects.map((eventId) => {
-      return client.getObject({
-        id: eventId,
-        options: { showContent: true }
-      })
-        .then((res) => {
-          const content = res.data?.content as any;
-          if (content?.fields?.available_tickets_to_buy) {
-            const tickets = content.fields.available_tickets_to_buy;
-            const eventInfo = {
-              eventName: content.fields.event_name,
-              eventId: content.fields.event_id,
-              venue: content.fields.venue,
-              eventDate: content.fields.event_date,
-              eventObjectId: eventId
-            };
-            return tickets.map((ticket: any) => ({
-              ...ticket,
+  const fetchAllTickets = async () => {
+    setLoading(true);
+    const allTickets: any[] = [];
+    const metadataMap = new Map();
+
+    try {
+      for (const eventObjectId of eventObjects) {
+        // 1. Get Event metadata
+        const eventObj = await client.getObject({
+          id: eventObjectId,
+          options: { showContent: true }
+        });
+        
+        const eventContent = eventObj.data?.content as any;
+        if (!eventContent || eventContent.dataType !== 'moveObject') continue;
+
+        const eventFields = eventContent.fields;
+        const eventInfo = {
+          eventName: eventFields.event_name,
+          eventId: eventFields.event_id,
+          venue: eventFields.venue,
+          eventDate: eventFields.event_date,
+          eventObjectId: eventObjectId
+        };
+        metadataMap.set(eventFields.event_id, eventInfo);
+
+        // 2. Fetch Dynamic Fields (The actual tickets)
+        const dynamicFields = await client.getDynamicFields({
+          parentId: eventObjectId,
+        });
+
+        // 3. Fetch each ticket object content
+        const ticketPromises = dynamicFields.data.map((field: any) =>
+          client.getObject({
+            id: field.objectId,
+            options: { showContent: true }
+          })
+        );
+
+        const ticketObjects = await Promise.all(ticketPromises);
+        
+        const ticketsFromEvent = ticketObjects.map((t: any) => {
+          const content = t.data?.content as any;
+          // In IOTA dynamic fields, the actual TicketNFT fields are inside 'value'
+          if (content?.fields?.value?.fields) {
+            return {
+              ...content.fields.value.fields,
               eventInfo
-            }));
+            };
           }
-          return [];
-        })
-        .catch((error) => {
-          console.error(`Error fetching tickets from event ${eventId}:`, error);
-          return [];
-        });
-    });
+          return null;
+        }).filter(t => t !== null);
 
-    Promise.all(fetchPromises)
-      .then((results) => {
-        const allTickets = results.flat();
-        setTickets(allTickets);
+        allTickets.push(...ticketsFromEvent);
+      }
 
-        const metadataMap = new Map();
-        results.forEach((ticketsFromEvent: any) => {
-          if (ticketsFromEvent.length > 0 && ticketsFromEvent[0].eventInfo) {
-            const eventInfo = ticketsFromEvent[0].eventInfo;
-            metadataMap.set(eventInfo.eventId, eventInfo);
-          }
-        });
-        setEventMetadataMap(metadataMap);
-        fetchResaleTickets(metadataMap);
-      });
-  }, [eventObjects, packageId]);
+      setTickets(allTickets);
+      setEventMetadataMap(metadataMap);
+      // Now fetch resale listings
+      fetchResaleTickets(metadataMap);
+    } catch (err) {
+      console.error("Error fetching marketplace data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchAllTickets();
+}, [eventObjects, packageId]);
 
   const fetchResaleTickets = (metadataMap: Map<string, any>) => {
     setResaleFetched(true);
@@ -201,64 +227,60 @@ export default function AvailableTickets() {
       });
   };
 
-  const handleBuyTicket = async (seatNumber: number, eventObjectId: string) => {
-    if (!address?.address) {
-      alert("Please connect your wallet first!");
-      return;
-    }
-    setBuying(seatNumber);
-    try {
-      const eventData = await client.getObject({
-        id: eventObjectId,
-        options: { showContent: true }
-      });
-      const content = eventData.data?.content as any;
-      const tickets = content?.fields?.available_tickets_to_buy || [];
-      const ticket = tickets.find((t: any) => 
-        t.fields?.seat_number === seatNumber || t.seat_number === seatNumber
-      );
-      if (!ticket) {
-        alert("Ticket not found!");
-        setBuying(null);
-        return;
-      }
-      const price = ticket.fields?.price || ticket.price;
-      const tx = new Transaction();
-      tx.setGasBudget(50000000);
-      const [paymentCoin] = tx.splitCoins(tx.gas, [price]);
-      tx.moveCall({
-        target: `${packageId}::independent_ticketing_system_nft::buy_ticket`,
-        arguments: [
-          paymentCoin,
-          tx.pure.u64(seatNumber),
-          tx.object(eventObjectId),
-        ],
-      });
-      signAndExecuteTransaction(
-        { transaction: tx },
-        {
-          onSuccess: ({ digest }: { digest: any }) => {
-            client
-              .waitForTransaction({ digest, options: { showEffects: true } })
-              .then(() => {
-                showTransactionSuccess(digest, `Ticket ${seatNumber} purchased successfully!`);
-                setBuying(null);
-                refetchTickets();
-              });
-          },
-          onError: (error: any) => {
-            console.error("Failed to buy ticket", error);
+const handleBuyTicket = async (seatNumber: number, eventObjectId: string) => {
+  if (!address?.address) {
+    alert("Please connect your wallet first!");
+    return;
+  }
+
+  // Find the ticket price from our local state
+  const ticket = tickets?.find(t => 
+    t.eventInfo?.eventObjectId === eventObjectId && t.seat_number === seatNumber
+  );
+  
+  if (!ticket) {
+    alert("Ticket details not found locally.");
+    return;
+  }
+
+  setBuying(seatNumber);
+  try {
+    const tx = new Transaction();
+    tx.setGasBudget(50000000);
+    
+    // Use the price from the fetched ticket object
+    const [paymentCoin] = tx.splitCoins(tx.gas, [ticket.price]);
+    
+    tx.moveCall({
+      target: `${packageId}::independent_ticketing_system_nft::buy_ticket`,
+      arguments: [
+        paymentCoin,
+        tx.pure.u64(seatNumber),
+        tx.object(eventObjectId),
+      ],
+    });
+
+    signAndExecuteTransaction(
+      { transaction: tx },
+      {
+        onSuccess: ({ digest }) => {
+          client.waitForTransaction({ digest }).then(() => {
+            showTransactionSuccess(digest, `Seat ${seatNumber} purchased!`);
             setBuying(null);
-            alert(`Error: ${error.message}`);
-          },
-        }
-      );
-    } catch (error: any) {
-      console.error("Error buying ticket:", error);
-      alert(`Error: ${error.message}`);
-      setBuying(null);
-    }
-  };
+            refetchTickets();
+          });
+        },
+        onError: (error) => {
+          console.error(error);
+          setBuying(null);
+        },
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    setBuying(null);
+  }
+};
 
   const handleBuyResale = async (resaleObjectId: string, seatNumber: number) => {
     if (!address?.address) {

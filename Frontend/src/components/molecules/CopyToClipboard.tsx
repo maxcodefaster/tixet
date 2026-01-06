@@ -23,7 +23,7 @@ export default function CopyToClipboard({ text }: { text: string }) {
           height="12"
           rx="2"
           stroke="#A0A0A0"
-          stroke-width="2"
+          strokeWidth="2"
         />
         <rect
           x="4"
@@ -32,7 +32,7 @@ export default function CopyToClipboard({ text }: { text: string }) {
           height="12"
           rx="2"
           stroke="#A0A0A0"
-          stroke-width="2"
+          strokeWidth="2"
         />
       </svg>
     </Box>

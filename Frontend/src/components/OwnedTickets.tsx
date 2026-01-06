@@ -43,6 +43,10 @@ export default function OwnedObjects() {
 
   useEffect(() => {
     if (address) {
+      setLoading(true);
+      
+      // ONLY fetch objects actually in your wallet. 
+      // This ensures all actions (Transfer, Burn, Resell) actually work.
       Promise.all([
         client.getOwnedObjects({
           owner: address.address,
@@ -58,11 +62,10 @@ export default function OwnedObjects() {
         setTickets(ticketRes.data || []);
         setResaleListings(resaleRes.data || []);
         setLoading(false);
+      }).catch(err => {
+        console.error("Fetch error:", err);
+        setLoading(false);
       });
-    } else {
-      setTickets([]);
-      setResaleListings([]);
-      setLoading(false);
     }
   }, [address, packageId]);
 
