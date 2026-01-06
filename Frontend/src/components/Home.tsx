@@ -92,6 +92,85 @@ export default function Home() {
           </div>
         </div>
 
+        {/* User Onboarding Section */}
+        <div style={{
+          padding: '2rem',
+          background: 'var(--paper-white)',
+          border: '3px solid var(--ink-black)',
+          borderRadius: '16px',
+          maxWidth: '600px',
+          margin: '2rem auto',
+          boxShadow: 'var(--paper-shadow)',
+          position: 'relative'
+        }}>
+          {/* Decorative tape */}
+          <div style={{
+            position: "absolute",
+            top: "-10px",
+            left: "50%",
+            transform: "translateX(-50%) rotate(-2deg)",
+            width: "100px",
+            height: "24px",
+            background: "var(--sticker-yellow)",
+            opacity: 0.7,
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          }} />
+
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            marginBottom: '1rem',
+            color: 'var(--ink-black)',
+            fontSize: '1.8rem'
+          }}>
+            First Time Here? 🎟️
+          </h2>
+
+          <ol style={{
+            lineHeight: 2,
+            fontFamily: 'var(--font-body)',
+            paddingLeft: '1.5rem',
+            color: 'var(--ink-black)'
+          }}>
+            <li>
+              <strong>Connect Wallet:</strong> Click "Connect Wallet" button above to create your digital identity
+            </li>
+            <li>
+              <strong>Get Test Tokens:</strong> Visit{' '}
+              <a
+                href="https://faucet.iota.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'var(--stamp-blue)',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  borderBottom: '2px solid var(--stamp-blue)'
+                }}
+              >
+                IOTA Faucet
+              </a>
+              {' '}to receive free testnet tokens
+            </li>
+            <li>
+              <strong>Browse Events:</strong> Buy tickets with blockchain-verified authenticity
+            </li>
+          </ol>
+
+          <p style={{
+            color: 'gray',
+            marginTop: '1.5rem',
+            fontSize: '0.9rem',
+            fontFamily: 'var(--font-body)',
+            padding: '1rem',
+            background: 'var(--soft-gray)',
+            borderRadius: '8px',
+            border: '1px solid var(--ink-black)'
+          }}>
+            💡 <strong>Production Note:</strong> In the real app, you'd use credit card payments.
+            The blockchain runs invisibly in the background—no crypto knowledge needed!
+          </p>
+        </div>
+
         <WaveDivider />
 
         {/* Show Marketplace Tickets */}

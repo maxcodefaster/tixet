@@ -11,6 +11,7 @@ function App() {
   const mainNav = [
     { path: '/', label: 'My Tickets' },
     { path: '/AvailableTickets', label: 'Marketplace' },
+    { path: '/analytics', label: 'Analytics' },
   ];
 
   // Secondary Actions (Utilities)
