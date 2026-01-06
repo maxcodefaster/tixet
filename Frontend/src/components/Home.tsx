@@ -156,19 +156,6 @@ export default function Home() {
             </li>
           </ol>
 
-          <p style={{
-            color: 'gray',
-            marginTop: '1.5rem',
-            fontSize: '0.9rem',
-            fontFamily: 'var(--font-body)',
-            padding: '1rem',
-            background: 'var(--soft-gray)',
-            borderRadius: '8px',
-            border: '1px solid var(--ink-black)'
-          }}>
-            💡 <strong>Production Note:</strong> In the real app, you'd use credit card payments.
-            The blockchain runs invisibly in the background—no crypto knowledge needed!
-          </p>
         </div>
 
         <WaveDivider />
