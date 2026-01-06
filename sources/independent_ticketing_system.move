@@ -1,6 +1,6 @@
 module independent_ticketing_system::independent_ticketing_system_nft {
     use std::string;
-    use iota::coin::{Coin};
+    use iota::coin::Coin;
     use iota::iota::IOTA;
     use iota::event;
     use iota::table::{Self, Table};
@@ -283,7 +283,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let mut ticket = dynamic_field::remove<u64, TicketNFT>(&mut event_object.id, seat_number);
 
         // Verify payment amount matches ticket price
-        assert!(coin::value(&payment_coin) == ticket.price, NOT_ENOUGH_FUNDS);
+        assert!(iota::coin::value(&payment_coin) == ticket.price, NOT_ENOUGH_FUNDS);
 
         // Transfer the payment coin directly to the creator
         transfer::public_transfer(payment_coin, ticket.creator);
@@ -328,7 +328,7 @@ module independent_ticketing_system::independent_ticketing_system_nft {
         let total_required = price1 + royalty_amount;
 
         // Verify payment amount matches resale price + royalty
-        assert!(coin::value(&payment_coin) == total_required, NOT_ENOUGH_FUNDS);
+        assert!(iota::coin::value(&payment_coin) == total_required, NOT_ENOUGH_FUNDS);
 
         // Split the payment coin for royalty and seller payment
         let royalty_coin = payment_coin.split(royalty_amount, ctx);
